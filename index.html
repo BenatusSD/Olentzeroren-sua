@@ -103,7 +103,7 @@
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    transition: opacity 0.27s ease;
+    transition: opacity 0.5s ease;
     opacity: 1;
   }
   .book.fading { opacity: 0; }
@@ -418,41 +418,41 @@ const story = {
   },
   dayBored: {
     image: "empty",
-    text: "(placeholder) There's nothing to do. The boy wanders from room to room, bored out of his mind.",
+    text: "Aiton-amonen etxea arraroa da. Eskailerek soinua ateratzen dute hanka jartzen dudan bakoitzean, minagatik kexatuko balira bezela. Eta paretak ezagutzen ez ditudan pertsonen argazkiz beteak daude. Zihur ganbaran badutela jolasteko zerbait... Gurasoak beti dabiltza ganbaran dauden trasteei buruz hizketan...",
     choices: [{ label: "Jarraitu", next: "dayChoice" }]
   },
   dayChoice: {
     image: "empty",
-    text: "(placeholder) Outside, snow is falling. Upstairs, a narrow staircase leads to the ganbara — the old attic no one ever talks about.",
+    text: "Agian ganbarara joan beharko nuke, orain gurasoak lanpetuta daudela. Gurasoek kanpoan jolasteko esan didate lehen... ez legoke gaizki elurrarekin zerbait egitea baina... ez dakit ba",
     choices: [
-      { label: "(placeholder) Go out and play in the snow", next: "dayOutside" },
-      { label: "(placeholder) Sneak up to the attic", next: "dayAttic" }
+      { label: "Kanpora joan, elurrarekin jolastera", next: "dayOutside" },
+      { label: "Ganbarara igo, gurasoak konturatu aurretik", next: "dayAttic" }
     ]
   },
   dayAttic: {
     image: "empty",
-    text: "(placeholder) The ganbara is full of dust and old shapes half-covered in sheets. Something up here looks older than anything else in the house.",
+    text: "Hau bai leku bitxia, nik uste mila urte pasa direla norbaitek hau garbitu zuenetik. Traste zaharrez beteta eta nik ezin ezer ikusi. ",
     choices: [{ label: "Jarraitu", next: "dayParents" }]
   },
   dayParents: {
     image: "empty",
-    text: "(placeholder) \u201cWhat are you doing up there?\u201d a voice calls from below. \u201cCome down and get some fresh air — go play in the snow for a while.\u201d",
-    choices: [{ label: "(placeholder) You begrudgingly agree", next: "dayOutside" }]
+    text: "\u201cZer zabiltza hor goian?\u201d kaka zaharra, ezaltzuten beste ezer egiteko \u201c Irten zaitez kanpora, gero elurretara joan nahi duzula kexatzen zara eta\u201d",
+    choices: [{ label: "Marmar artean kanpora ateratzen zara...", next: "dayOutside" }]
   },
   dayOutside: {
     image: "baserri",
-    text: "(placeholder) Outside, the snow is cold and the yard is quiet. Without really deciding to, the boy wanders past the fence and into the trees.",
+    text: "A zer nolako hotza. Zihurrenik elurra ere izoztua dagoela panpina egiteko. Ea basoan adar batzuk aurkitzen ditudan. Pixkat bat iluna dirudi, halabaina...",
     choices: [{ label: "Jarraitu", next: "introMeetMariDomingi" }]
   },
   introMeetMariDomingi: {
     image: "maridomingi",
-    text: "A woman appeared between the trees, her shawl dusted with frost. \u201cThere you are,\u201d she said, kneeling down. \u201cI need someone brave to help me. What's your name?\u201d",
+    text: "Basoan adar bila zabiltzala, soinu bat sumatzen duzu. Basurdea ote? Aitonak beti zioen basurdeak iluntzean jeisten direla artoa jatera... edo azeria? baserriko ahuntzak? baino... txapela, animali batek... \u201cHor zaude! zu! etorri hona!\u201d dio arnasestuka \u201c laguntza behar dugu... ekaitza... sua... ez dut denbora dena azaltzeko, nola duzu izena?\u201d",
     type: "nameInput",
     next: "introSendOff"
   },
   introSendOff: {
     image: "maridomingi",
-    text: "\u201c{name} — good. Listen carefully: Olentzero's fire has gone out, and without it, he won't finish his work tonight. I know who might help... but you'll have to go to them yourself.\u201d",
+    text: "\u201c{name} — entzun: Olentzeroren sua... nola esan... su berezi bat da. Gabonetarako behar dugu baino ekaitzarekin itzali egin da. \u201d",
     choices: [{ label: "Jarraitu", next: "map" }]
   },
 
@@ -863,7 +863,7 @@ function renderWithTransition() {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) { render(); return; }
   const incoming = story[currentId];
-  const duration = (incoming && incoming.type === "interstitial") ? 975 : 270;
+  const duration = (incoming && incoming.type === "interstitial") ? 975 : 500;
   book.style.transitionDuration = duration + "ms";
   book.classList.add("fading");
   setTimeout(() => {
