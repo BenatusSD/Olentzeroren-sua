@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b1013">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Olentzeroren Sua — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #131a1f;
+    --night-deep: #0b1013;
+    --ember: #c96a2e;
+    --ember-bright: #e08a42;
+    --gold: #d4a94f;
+    --parchment: #f2e6cf;
+    --parchment-dim: #cbb98f;
+    --pine: #2f4a3f;
+    --pine-light: #4a6b5a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: radial-gradient(ellipse at 50% 0%, #1c2830 0%, var(--night) 45%, var(--night-deep) 100%);
+    font-family: 'Quicksand', sans-serif;
+    color: var(--parchment);
+    display: flex;
+    justify-content: center;
+  }
+
+  .dev-tag {
+    display: none;
+    position: fixed;
+    top: 54px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--pine-light);
+    background: rgba(0,0,0,0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'Quicksand', sans-serif;
+    z-index: 10;
+  }
+  body.dev-mode .dev-tag { display: block; }
+
+  body.menu-mode .scene-wrap { display: none; }
+  body.menu-mode .book {
+    background-size: 100% auto;
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-color: var(--night-deep);
+  }
+  body.menu-mode .card {
+    position: relative;
+    max-height: none;
+    overflow: visible;
+    background: none;
+    border: none;
+    box-shadow: none;
+    justify-content: flex-end;
+    padding-bottom: 56px;
+  }
+  body.menu-mode .card::before { display: none; }
+  body.menu-mode .card::after { display: none; }
+  body.menu-mode #storyText { display: none; }
+
+  body.interstitial-mode .book { background: #000; }
+  body.interstitial-mode .scene-wrap { display: none; }
+  body.interstitial-mode .top-bar { display: none; }
+  body.interstitial-mode .card {
+    position: relative;
+    max-height: none;
+    overflow: visible;
+    background: none;
+    border: none;
+    box-shadow: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  body.interstitial-mode .card::before { display: none; }
+  body.interstitial-mode .card::after { display: none; }
+  body.interstitial-mode .story-text { color: var(--parchment-dim); font-size: 21px; }
+  body.menu-mode .choice-btn {
+    background: rgba(11,16,19,0.55);
+    backdrop-filter: blur(2px);
+  }
+
+  .book {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.27s ease;
+    opacity: 1;
+  }
+  .book.fading { opacity: 0; }
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+  }
+  .top-bar-spacer { flex: 1; }
+  .top-icon {
+    pointer-events: auto;
+    background: rgba(11,16,19,0.55);
+    border: 1px solid rgba(212,169,79,0.35);
+    color: var(--parchment);
+    font-size: 15px;
+    line-height: 1;
+    padding: 8px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+  }
+  .top-icon:hover { border-color: var(--gold); }
+
+  .scene-wrap { position: relative; flex: 0 0 auto; }
+  .node-id {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 11px;
+    color: var(--parchment-dim);
+    background: rgba(0,0,0,0.45);
+    padding: 3px 9px;
+    border-radius: 12px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  body.dev-mode .node-id { display: block; }
+
+  .scene {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: linear-gradient(180deg, #0e1a1f 0%, #16241f 55%, #0b1310 100%);
+  }
+  .scene svg { width: 100%; height: 100%; display: block; }
+  .img-wrap { position: relative; width: 100%; height: 100%; }
+  .scene-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .flame-flicker {
+    position: absolute;
+    left: 24%; top: 26%; width: 46%; height: 48%;
+    background: radial-gradient(ellipse at center, rgba(224,138,66,0.6) 0%, rgba(224,138,66,0.2) 45%, transparent 70%);
+    filter: blur(7px);
+    mix-blend-mode: screen;
+    animation: flicker 2.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.06); }
+  }
+
+  .card {
+    background-image:
+      linear-gradient(to bottom, rgba(0,0,0,0.32) 0%, rgba(0,0,0,0) 60px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, #26201a 0%, #1d1712 100%);
+    background-blend-mode: normal, overlay, normal;
+    background-size: 100% 60px, 180px 180px, cover;
+    background-repeat: no-repeat, repeat, no-repeat;
+    background-position: top, 0 0, 0 0;
+    padding: 26px 24px 22px;
+    border: none;
+    border-top: 1.5px solid rgba(212,169,79,0.5);
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    max-height: 68dvh;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 7px 7px 7px 7px;
+    border: 1px solid rgba(212,169,79,0.22);
+    box-shadow: inset 0 0 0 5px rgba(212,169,79,0.06);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='2' y='2' width='6' height='6' fill='none' stroke='%23d4a94f' stroke-width='1' transform='rotate(45 5 5)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='2' y='2' width='6' height='6' fill='none' stroke='%23d4a94f' stroke-width='1' transform='rotate(45 5 5)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='2' y='2' width='6' height='6' fill='none' stroke='%23d4a94f' stroke-width='1' transform='rotate(45 5 5)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='2' y='2' width='6' height='6' fill='none' stroke='%23d4a94f' stroke-width='1' transform='rotate(45 5 5)'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: top 6px left 6px, top 6px right 6px, bottom 6px left 6px, bottom 6px right 6px;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0,0,0,0.32) 100%);
+    pointer-events: none;
+  }
+
+  .story-text {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--parchment);
+    margin: 0 0 18px;
+    max-width: 62ch;
+    cursor: pointer;
+  }
+
+  .listen-row { display: flex; align-items: center; gap: 10px; margin: -6px 0 18px; }
+  .listen-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: none; border: 1px solid var(--pine-light); color: var(--parchment-dim);
+    font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 13px;
+    padding: 7px 14px; border-radius: 20px; cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .listen-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .listen-btn.playing { border-color: var(--ember-bright); color: var(--ember-bright); }
+  .listen-note { font-size: 12px; color: var(--pine-light); margin: -6px 0 18px; }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+
+  .choice-btn {
+    text-align: left;
+    background: rgba(212,169,79,0.06);
+    border: 1px solid rgba(212,169,79,0.3);
+    color: var(--parchment);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600; font-size: 15px;
+    padding: 13px 16px; border-radius: 10px; cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+  .choice-btn:hover { background: rgba(212,169,79,0.14); border-color: var(--gold); }
+  .choice-btn:active { transform: scale(0.98); }
+
+  .choice-btn.visited { opacity: 0.55; }
+  .choice-btn .sub { display: block; font-family: 'Quicksand', sans-serif; font-weight: 500; font-size: 12px; color: var(--pine-light); margin-top: 2px; }
+
+  .choice-btn.audio-attn {
+    border-color: var(--gold);
+    animation: attn-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes attn-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(224,138,66,0.55); }
+    50% { box-shadow: 0 0 0 9px rgba(224,138,66,0); }
+  }
+
+  .name-row { display: flex; gap: 10px; margin-bottom: 4px; }
+  .name-input {
+    flex: 1;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(212,169,79,0.35);
+    color: var(--parchment);
+    font-family: 'Quicksand', sans-serif;
+    font-size: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    outline: none;
+  }
+  .name-input:focus { border-color: var(--gold); }
+  .name-submit {
+    background: var(--ember);
+    border: none; color: var(--parchment);
+    font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 15px;
+    padding: 0 20px; border-radius: 10px; cursor: pointer;
+  }
+  .name-submit:hover { background: var(--ember-bright); }
+
+  .map-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--pine-light);
+    margin: 0 0 14px;
+    letter-spacing: 0.01em;
+  }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="top-icon" id="topBack" title="Atzera">⬅</button>
+  <div class="top-bar-spacer"></div>
+  <button class="top-icon" id="topHints" title="Laguntza">❓</button>
+  <button class="top-icon" id="topMap" title="Mapa">🗺</button>
+  <button class="top-icon" id="topMute" title="Audioa">🔈</button>
+  <button class="top-icon" id="topRestart" title="Berrabiarazi">🔄</button>
+</div>
+
+<div class="dev-tag">vertical slice — engine test</div>
+
+<audio id="menuMusic" loop preload="auto"></audio>
+<div class="book">
+  <div class="scene-wrap">
+    <div class="scene" id="scene"></div>
+    <div class="node-id" id="nodeIdTag"></div>
+  </div>
+  <div class="card" id="card">
+    <p class="story-text" id="storyText"></p>
+    <div class="listen-row" id="listenRow" style="display:none;">
+      <button class="listen-btn" id="listenBtn">🔊 Listen</button>
+    </div>
+    <div id="interactiveArea"></div>
+  </div>
+</div>
+
+<script>
+// ---------- STATE ----------
+let state = {
+  name: "",
+  points: -10,          // placeholder threshold — three core quests at +5 each clears it with a little margin
+  quests: { basajaun: "unresolved", atarrabi: "unresolved", sorginak: "unresolved" },
+  audioEnabled: false
+};
+let currentId = "menu";
+let history = [];
+
+if (new URLSearchParams(window.location.search).has("dev")) {
+  document.body.classList.add("dev-mode");
+}
+
+function interpolate(text) {
+  return text.replace(/\{name\}/g, state.name || "friend");
+}
+
+// ---------- STORY DATA ----------
+const story = {
+  infoScreen: {
+    image: "empty",
+    text: "(placeholder) This is where a short explanation of the game could go — how to play, who it's for, anything you'd want a grown-up or curious kid to read first.",
+    choices: [{ label: "Menura itzuli", next: "menu" }]
+  },
+  aboutScreen: {
+    image: "empty",
+    text: "(placeholder) This is where a short note about the story and its sources could go — the mythology it's based on, who made it, and why.",
+    choices: [{ label: "Menura itzuli", next: "menu" }]
+  },
+  hintsScreen: {
+    image: "empty",
+    text: "(placeholder) This is where the child's journal of clues and lore would go — nothing to show here yet. Use the back arrow above to return to where you were.",
+    choices: []
+  },
+  introWinter: {
+    image: "winterVillage",
+    text: "Negua gogor etorri da aurten. Gabon gaua laister helduko da, eta elur ekaitzak guztiz bildu ditu mendiak. Kea darie tximiniei, etxeak berotzeko saiakeren adierazle",
+    choices: [{ label: "Jarraitu", next: "introSubila" }]
+  },
+  introSubila: {
+    image: "darkHearth",
+    text: "Diotenez, Euskal Herrian, sua gabon gau guztian zehar mantentzen zen piztuta, abereak, etxea edo pertsonak berak ere babesteko. Subila edo Sukileroa deitzen zitzaion, edo, beste leku batzuetan Olentzero-enborra.",
+    choices: [{ label: "Jarraitu", next: "introSpecialFire" }]
+  },
+  introSpecialFire: {
+    image: "fireHearth",
+    text: "Olentzero eta Mari Domingik ere badute beraien sua. Su berezia itzaltzen ez dena. Neguko gau luzeetan piztuta mantentzen dena, argi biziz, gauean zehar lanean jarraitzeko. Opariak gabonetarako prest edukitzeko modu bakarra dute.",
+    choices: [{ label: "Jarraitu", next: "introStorm" }]
+  },
+  introStorm: {
+    image: "coldNight",
+    text: "Baino etengabeko ekaitzak sua bere azkenetan du. Olentzero eta Mari Domingi etengabe dabiltza etxea babesten, haize hotza etxetik at mantentzeko, betirako sua itzal ez dadin",
+    choices: [{ label: "Jarraitu", next: "introWindBursts" }]
+  },
+  introWindBursts: {
+    image: "windBursts",
+    text: "Baina haize bolada batek ate eta leihoak ireki ditu, bultzada batez. Elurra dabil etxe guztitik bueltaka. 'Mari Domingi! Betirako sua... ' dio Olentzerok.",
+    choices: [{ label: "Jarraitu", next: "introFireDies" }]
+  },
+  introFireDies: {
+    image: "fireDies",
+    text: 'Baina berandu da. Ekaitza gailendu da etxean. Itzali da sua. "Olentzero... Berehala konpondu behar dugu hau, bestela gabon gaua, opariak... Ez digu denbora emango"',
+    choices: [{ label: "Jarraitu", next: "dayZero" }]
+  },
+  dayZero: {
+    type: "interstitial",
+    text: "Egun bat lehenago...",
+    next: "dayHome",
+    hold: 2200
+  },
+  dayHome: {
+    image: "goizekoelurra",
+    text: 'Elurra ari du kanpoan. "Maleta prestatu al duzu?" galdetzen dute gurasoek. \u201cEz dakit zertarako joan behar dugun baserrira gabonetan, herrian lagunekin egon beharrean\u201d pentsatzen duzu, marmarka. "Bai, prestatu dut..."',
+    choices: [{ label: "Jarraitu", next: "dayCar" }]
+  },
+  dayCar: {
+    image: "empty",
+    text: "Egun osoa bidean pasako dugu hemen. \u201cEderra dugu elurte honekin, ez dakit iritsiko garen!\u201d dio aitak. Ez dakit zergatik kexatzen diren helduak elurraz. Gidatu beharrean elurretan jolasean arituko bagina, alde ederrean.... ederra litzateke urteko elurra horrela egingo balu",
+    choices: [{ label: "Jarraitu", next: "dayArrival" }]
+  },
+  dayArrival: {
+    image: "baserri",
+    text: "Horra baserria. zihurrenik gabonetan ere lekak edo babarrunak jango ditugula. Ezin txakurrarekin jolastu, jostailurik ez, eta okerrena, dinosaurioen garaiko telebista zahar bat...",
+    choices: [{ label: "Jarraitu", next: "dayBored" }]
+  },
+  dayBored: {
+    image: "empty",
+    text: "(placeholder) There's nothing to do. The boy wanders from room to room, bored out of his mind.",
+    choices: [{ label: "Jarraitu", next: "dayChoice" }]
+  },
+  dayChoice: {
+    image: "empty",
+    text: "(placeholder) Outside, snow is falling. Upstairs, a narrow staircase leads to the ganbara — the old attic no one ever talks about.",
+    choices: [
+      { label: "(placeholder) Go out and play in the snow", next: "dayOutside" },
+      { label: "(placeholder) Sneak up to the attic", next: "dayAttic" }
+    ]
+  },
+  dayAttic: {
+    image: "empty",
+    text: "(placeholder) The ganbara is full of dust and old shapes half-covered in sheets. Something up here looks older than anything else in the house.",
+    choices: [{ label: "Jarraitu", next: "dayParents" }]
+  },
+  dayParents: {
+    image: "empty",
+    text: "(placeholder) \u201cWhat are you doing up there?\u201d a voice calls from below. \u201cCome down and get some fresh air — go play in the snow for a while.\u201d",
+    choices: [{ label: "(placeholder) You begrudgingly agree", next: "dayOutside" }]
+  },
+  dayOutside: {
+    image: "baserri",
+    text: "(placeholder) Outside, the snow is cold and the yard is quiet. Without really deciding to, the boy wanders past the fence and into the trees.",
+    choices: [{ label: "Jarraitu", next: "introMeetMariDomingi" }]
+  },
+  introMeetMariDomingi: {
+    image: "maridomingi",
+    text: "A woman appeared between the trees, her shawl dusted with frost. \u201cThere you are,\u201d she said, kneeling down. \u201cI need someone brave to help me. What's your name?\u201d",
+    type: "nameInput",
+    next: "introSendOff"
+  },
+  introSendOff: {
+    image: "maridomingi",
+    text: "\u201c{name} — good. Listen carefully: Olentzero's fire has gone out, and without it, he won't finish his work tonight. I know who might help... but you'll have to go to them yourself.\u201d",
+    choices: [{ label: "Jarraitu", next: "map" }]
+  },
+
+  basajaunStart: {
+    image: "forestDay",
+    text: "You follow the old path deeper into the woods, until the trees close in around you.",
+    choices: [{ label: "Jarraitu", next: "encounter" }]
+  },
+  encounter: {
+    image: "basajaun",
+    text: "Basajaun looked at you, surprised — he wasn't expecting anyone here. \u201cWhat are you doing here?\u201d he says, taking a step closer.",
+    narration: "The undergrowth had gone still. Then, between the dark trunks, something moved — tall as the trees themselves, hair falling past his knees like moss over old stone. Basajaun, Lord of the Forest, had not expected anyone this deep in his woods. \u201cWhat are you doing here?\u201d he rumbled, low as distant thunder, and took one slow step closer.",
+    choices: [
+      { label: "Run away and say nothing", next: "ranAway" },
+      { label: "\u201cSorry — I didn't mean to disturb you.\u201d Stay, respectfully.", next: "stayed", effect: { points: 5, resolve: "basajaun" } }
+    ]
+  },
+  ranAway: {
+    image: "empty",
+    text: "You turn and run. Behind you, only silence. Whatever Basajaun might have told you, you'll have to learn some other way — maybe another time.",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  },
+  stayed: {
+    image: "fireside",
+    text: "Basajaun studies you a moment longer, then something in his face eases. \u201cNot many stay,\u201d he says. \u201cCome — sit by the fire, and tell me why you've come.\u201d",
+    narration: "For a long moment neither of you moved. Then, slowly, something in the giant's face eased — the way a held breath finally lets go. \u201cNot many stay,\u201d he said, quieter now. \u201cCome. Sit by the fire, and tell me why you've come.\u201d",
+    choices: [{ label: "Jarraitu", next: "map" }]
+  },
+  basajaunRevisit: {
+    image: "fireside",
+    text: "Basajaun nods to you from beside his fire. \u201cYou already know what I know,\u201d he says.",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  },
+  mariStub: {
+    image: "empty",
+    text: "Word has reached you: Mari has been seen near Anboto. (Her cave isn't built yet — this is just here to prove she appears once your path allows it.)",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  },
+
+  atarrabiEncounter: {
+    image: "atarrabi",
+    text: "(placeholder) Atarrabi looks up as you approach. \u201cNot many find their way here,\u201d he says.",
+    choices: [
+      { label: "(placeholder) Leave without asking", next: "atarrabiDeclined" },
+      { label: "(placeholder) Ask for his help", next: "atarrabiHelped", effect: { points: 5, resolve: "atarrabi" } }
+    ]
+  },
+  atarrabiDeclined: {
+    image: "empty",
+    text: "(placeholder) You leave without asking. Maybe another time.",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  },
+  atarrabiHelped: {
+    image: "fireside",
+    text: "(placeholder) Atarrabi nods and shares what he knows before you go.",
+    choices: [{ label: "Jarraitu", next: "map" }]
+  },
+  atarrabiRevisit: {
+    image: "atarrabi",
+    text: "(placeholder) Atarrabi greets you warmly. \u201cYou already know what I told you,\u201d he says.",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  },
+
+  sorginakEncounter: {
+    image: "sorginak",
+    text: "(placeholder) The sorginak turn as you approach. \u201cWhat do you want?\u201d one of them asks.",
+    choices: [
+      { label: "(placeholder) Back away, unsure", next: "sorginakDeclined" },
+      { label: "(placeholder) Speak with them", next: "sorginakHelped", effect: { points: 5, resolve: "sorginak" } }
+    ]
+  },
+  sorginakDeclined: {
+    image: "empty",
+    text: "(placeholder) You back away. Maybe another time.",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  },
+  sorginakHelped: {
+    image: "fireside",
+    text: "(placeholder) They share what they know before returning to their fire.",
+    choices: [{ label: "Jarraitu", next: "map" }]
+  },
+  sorginakRevisit: {
+    image: "sorginak",
+    text: "(placeholder) The sorginak nod to you. \u201cWe already spoke,\u201d they say.",
+    choices: [{ label: "Back to the clearing", next: "map" }]
+  }
+};
+
+// ---------- SCENES ----------
+// Every scene key (a node's `image`) loads images/<key>.webp. The SVGs below are
+// placeholders, shown only when that file is missing.
+const flickerScenes = new Set(["fireHearth"]);
+const placeholders = {
+  coldNight: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#0a141c"/>
+    <circle cx="200" cy="150" r="55" fill="#0d2230" opacity="0.7"/>
+    <circle cx="200" cy="150" r="7" fill="#e08a42" opacity="0.55"/>
+    <circle cx="200" cy="150" r="3" fill="#f2c26a"/>
+  </svg>`,
+  baserri: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#16241f"/>
+    <circle cx="320" cy="55" r="30" fill="#2f4a3f" opacity="0.55"/>
+    <path d="M0,300 L0,210 L60,150 L120,210 L180,140 L240,210 L300,160 L360,210 L400,180 L400,300 Z" fill="#0e1a15"/>
+    <rect x="150" y="220" width="100" height="60" fill="#241a12"/>
+    <path d="M140,220 L200,180 L260,220 Z" fill="#1a120c"/>
+    <rect x="188" y="245" width="10" height="8" fill="#e08a42" opacity="0.5"/>
+  </svg>`,
+  maridomingi: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#0f1a17"/>
+    <path d="M0,300 L0,220 L50,150 L100,220 L150,140 L200,220 L250,160 L300,220 L350,150 L400,220 L400,300 Z" fill="#0a1310"/>
+    <path d="M175,260 C168,200 172,160 200,130 C228,160 232,200 225,260 Z" fill="#5a3a2a"/>
+    <path d="M160,190 C170,170 230,170 240,190 L232,215 L168,215 Z" fill="#7a4a30"/>
+    <circle cx="200" cy="112" r="18" fill="#4a2f22"/>
+    <circle cx="193" cy="108" r="2" fill="#d4a94f"/>
+    <circle cx="207" cy="108" r="2" fill="#d4a94f"/>
+  </svg>`,
+  forestDay: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#16241f"/>
+    <circle cx="320" cy="60" r="34" fill="#2f4a3f" opacity="0.6"/>
+    <path d="M0,300 L0,190 L40,120 L70,190 L100,110 L140,190 L170,130 L210,190 L240,120 L280,190 L320,140 L360,190 L400,150 L400,300 Z" fill="#0e1a15"/>
+    <path d="M0,300 L0,230 L60,170 L110,230 L160,160 L210,230 L260,175 L310,230 L360,180 L400,230 L400,300 Z" fill="#0a1310"/>
+  </svg>`,
+  basajaun: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#0f1a17"/>
+    <path d="M0,300 L0,220 L50,150 L100,220 L150,140 L200,220 L250,160 L300,220 L350,150 L400,220 L400,300 Z" fill="#0a1310"/>
+    <ellipse cx="200" cy="150" rx="10" ry="30" fill="#d4a94f" opacity="0.12"/>
+    <path d="M180,260 C170,190 175,140 200,110 C225,140 230,190 220,260 Z" fill="#1c2a22"/>
+    <circle cx="200" cy="95" r="22" fill="#1c2a22"/>
+    <circle cx="192" cy="90" r="2.5" fill="#d4a94f" opacity="0.7"/>
+    <circle cx="208" cy="90" r="2.5" fill="#d4a94f" opacity="0.7"/>
+  </svg>`,
+  fireside: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#120e0a"/>
+    <ellipse cx="200" cy="230" rx="180" ry="90" fill="#3a2415" opacity="0.5"/>
+    <ellipse cx="200" cy="240" rx="16" ry="26" fill="#e08a42"/>
+    <ellipse cx="200" cy="235" rx="9" ry="16" fill="#f2c26a"/>
+    <ellipse cx="200" cy="150" rx="140" ry="200" fill="#c96a2e" opacity="0.06"/>
+  </svg>`,
+  empty: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#0b1013"/>
+    <path d="M0,300 L0,210 L50,140 L100,210 L150,130 L200,210 L250,150 L300,210 L350,140 L400,210 L400,300 Z" fill="#080c0e"/>
+  </svg>`,
+  titleScene: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#0a141c"/>
+    <circle cx="120" cy="60" r="2" fill="#f2e6cf" opacity="0.6"/>
+    <circle cx="260" cy="40" r="1.5" fill="#f2e6cf" opacity="0.5"/>
+    <circle cx="330" cy="90" r="2" fill="#f2e6cf" opacity="0.4"/>
+    <circle cx="70" cy="110" r="1.5" fill="#f2e6cf" opacity="0.4"/>
+    <path d="M0,300 L0,220 L60,160 L120,220 L180,150 L240,220 L300,170 L360,220 L400,190 L400,300 Z" fill="#0e1a15"/>
+    <circle cx="200" cy="220" r="6" fill="#e08a42" opacity="0.5"/>
+  </svg>`,
+  mapScene: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#1b241c"/>
+    <path d="M20,260 C100,220 140,160 200,150 C260,140 300,90 380,60" stroke="#4a6b5a" stroke-width="2" fill="none" stroke-dasharray="6 8" opacity="0.6"/>
+    <circle cx="20" cy="260" r="6" fill="#d4a94f"/>
+    <circle cx="200" cy="150" r="6" fill="#e08a42"/>
+    <circle cx="380" cy="60" r="6" fill="#4a6b5a" opacity="0.4"/>
+  </svg>`,
+  atarrabi: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#12181a"/>
+    <path d="M0,300 L0,220 L50,150 L100,220 L150,140 L200,220 L250,160 L300,220 L350,150 L400,220 L400,300 Z" fill="#0a1310"/>
+    <path d="M178,260 C172,200 176,160 200,132 C224,160 228,200 222,260 Z" fill="#3a4a55"/>
+    <circle cx="200" cy="112" r="17" fill="#2c3a40"/>
+    <circle cx="194" cy="108" r="2" fill="#d4a94f"/>
+    <circle cx="206" cy="108" r="2" fill="#d4a94f"/>
+  </svg>`,
+  sorginak: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="300" fill="#0d1512"/>
+    <ellipse cx="200" cy="260" rx="170" ry="40" fill="#1c2a20" opacity="0.6"/>
+    <path d="M140,260 C136,220 140,195 155,180 C170,195 174,220 170,260 Z" fill="#2a2018"/>
+    <path d="M200,265 C195,215 200,185 220,168 C240,185 245,215 240,265 Z" fill="#2a2018"/>
+    <path d="M260,260 C256,222 260,198 275,184 C290,198 294,222 290,260 Z" fill="#2a2018"/>
+    <circle cx="155" cy="168" r="3" fill="#e08a42" opacity="0.6"/>
+    <circle cx="220" cy="156" r="3" fill="#e08a42" opacity="0.6"/>
+    <circle cx="275" cy="172" r="3" fill="#e08a42" opacity="0.6"/>
+  </svg>`
+};
+
+function renderScene(key) {
+  const scene = document.getElementById("scene");
+  const fallback = placeholders[key] || placeholders.empty;
+  if (key === "empty" || !key) { scene.innerHTML = fallback; return; }
+  scene.innerHTML = `<div class="img-wrap"><img class="scene-img" src="images/${key}.webp" alt="">${flickerScenes.has(key) ? '<div class="flame-flicker"></div>' : ""}</div>`;
+  const img = scene.querySelector("img");
+  // Guard: if the player has already moved on, this scene is detached — don't overwrite the new one.
+  img.onerror = () => { if (scene.contains(img)) scene.innerHTML = fallback; };
+}
+
+function stopNarration() {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+// ---------- TYPEWRITER TEXT REVEAL ----------
+// Switched off for now (found distracting for long narration). Flip to true to bring it back.
+const TYPEWRITER_ENABLED = false;
+
+function typeText(el, text, onDone) {
+  el.innerHTML = "";
+  el.onclick = null;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!TYPEWRITER_ENABLED || reduced || !text) {
+    el.textContent = text;
+    if (onDone) onDone();
+    return;
+  }
+  const chars = Array.from(text).map(ch => {
+    const span = document.createElement("span");
+    span.textContent = ch;
+    span.style.opacity = "0";
+    return span;
+  });
+  chars.forEach(span => el.appendChild(span));
+  let i = 0;
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    clearInterval(timer);
+    chars.forEach(s => { s.style.opacity = "1"; });
+    if (onDone) onDone();
+  };
+  const timer = setInterval(() => {
+    if (i >= chars.length) { finish(); return; }
+    chars[i].style.opacity = "1";
+    i++;
+  }, 28);
+  el.onclick = finish;
+}
+
+// ---------- RENDER: STORY NODE ----------
+function renderNode(node) {
+  renderScene(node.image);
+
+  const listenRow = document.getElementById("listenRow");
+  stopNarration();
+
+  if (node.narration) {
+    if ("speechSynthesis" in window) {
+      listenRow.style.display = "flex";
+      listenRow.innerHTML = '<button class="listen-btn" id="listenBtn">🔊 Listen</button>';
+      const btn = document.getElementById("listenBtn");
+      const play = () => {
+        const utter = new SpeechSynthesisUtterance(interpolate(node.narration));
+        utter.rate = 0.92;
+        utter.onend = () => { btn.classList.remove("playing"); btn.textContent = "🔊 Listen"; };
+        window.speechSynthesis.speak(utter);
+        btn.classList.add("playing");
+        btn.textContent = "⏸ Playing…";
+      };
+      btn.onclick = () => {
+        if (btn.classList.contains("playing")) {
+          stopNarration();
+          btn.classList.remove("playing");
+          btn.textContent = "🔊 Listen";
+          return;
+        }
+        play();
+      };
+      if (state.audioEnabled) play();
+    } else {
+      listenRow.style.display = "block";
+      listenRow.innerHTML = '<p class="listen-note">🔇 narration not available on this device</p>';
+    }
+  } else {
+    listenRow.style.display = "none";
+  }
+
+  const area = document.getElementById("interactiveArea");
+  area.innerHTML = "";
+
+  typeText(document.getElementById("storyText"), interpolate(node.text), () => {
+    showInteractive(node, area);
+  });
+}
+
+function showInteractive(node, area) {
+  if (node.type === "interstitial") {
+    const thisId = currentId;
+    setTimeout(() => {
+      if (currentId === thisId) goTo(node.next);
+    }, node.hold || 2200);
+    return;
+  }
+
+  if (node.type === "nameInput") {
+    const row = document.createElement("form");
+    row.className = "name-row";
+    row.innerHTML = `<input class="name-input" id="nameField" placeholder="Your name" enterkeyhint="go" autocomplete="off" />
+                      <button class="name-submit" id="nameSubmit" type="submit">→</button>`;
+    area.appendChild(row);
+    const submit = () => {
+      const val = document.getElementById("nameField").value.trim();
+      pushHistory();
+      state.name = val || "friend";
+      stopNarration();
+      currentId = node.next;
+      renderWithTransition();
+    };
+    row.addEventListener("submit", e => { e.preventDefault(); submit(); });
+  } else {
+    const choicesEl = document.createElement("div");
+    choicesEl.className = "choices";
+    node.choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.textContent = choice.label;
+      btn.onclick = () => { goTo(choice.next, choice.effect); };
+      choicesEl.appendChild(btn);
+    });
+    area.appendChild(choicesEl);
+  }
+}
+
+// ---------- RENDER: MENU ----------
+function renderMenu() {
+  document.querySelector(".book").style.backgroundImage = 'url("images/titleArt.webp")';
+  document.getElementById("listenRow").style.display = "none";
+
+  const area = document.getElementById("interactiveArea");
+  area.innerHTML = "";
+  const choicesEl = document.createElement("div");
+  choicesEl.className = "choices";
+
+  const items = [
+    { label: "Hasi", next: "introWinter" },
+    { label: "Informazioa", next: "infoScreen" },
+    { label: "Honi buruz", next: "aboutScreen" }
+  ];
+  items.forEach(item => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    btn.textContent = item.label;
+    btn.onclick = () => { goTo(item.next); };
+    choicesEl.appendChild(btn);
+  });
+
+  const audioBtn = document.createElement("button");
+  audioBtn.className = "choice-btn" + (state.audioEnabled ? "" : " audio-attn");
+  audioBtn.textContent = state.audioEnabled ? "🔇 Audioa itzali" : "🔈 Audioa piztu";
+  audioBtn.onclick = () => { toggleAudio(); };
+  choicesEl.appendChild(audioBtn);
+
+  const music = document.getElementById("menuMusic");
+  if (state.audioEnabled) music.play().catch(() => {});
+
+  area.appendChild(choicesEl);
+}
+
+// ---------- RENDER: MAP ----------
+function renderMap() {
+  renderScene("mapScene");
+  document.getElementById("listenRow").style.display = "none";
+
+  const area = document.getElementById("interactiveArea");
+  area.innerHTML = "";
+
+  typeText(document.getElementById("storyText"), interpolate("The forest opens onto a wide clearing. A few paths lead further in — you can choose where to go, {name}."), () => {
+    area.innerHTML = '<p class="map-title">Where will you go?</p>';
+    const choicesEl = document.createElement("div");
+    choicesEl.className = "choices";
+
+    const locations = [
+      { quest: "basajaun", label: "Basajaun's clearing", start: "basajaunStart", revisit: "basajaunRevisit" },
+      { quest: "atarrabi", label: "Atarrabi", start: "atarrabiEncounter", revisit: "atarrabiRevisit" },
+      { quest: "sorginak", label: "The sorginak's fire", start: "sorginakEncounter", revisit: "sorginakRevisit" }
+    ];
+
+    locations.forEach(loc => {
+      const resolved = state.quests[loc.quest] === "resolved";
+      const btn = document.createElement("button");
+      btn.className = "choice-btn" + (resolved ? " visited" : "");
+      btn.innerHTML = loc.label + (resolved ? '<span class="sub">visited</span>' : "");
+      btn.onclick = () => { goTo(resolved ? loc.revisit : loc.start); };
+      choicesEl.appendChild(btn);
+    });
+
+    if (state.points >= 0) {
+      const mariBtn = document.createElement("button");
+      mariBtn.className = "choice-btn";
+      mariBtn.textContent = "Mari — seen near Anboto";
+      mariBtn.onclick = () => { goTo("mariStub"); };
+      choicesEl.appendChild(mariBtn);
+    }
+
+    area.appendChild(choicesEl);
+  });
+}
+
+// ---------- MAIN RENDER ----------
+function render() {
+  document.getElementById("nodeIdTag").textContent = currentId;
+  updateTopBar();
+  const isMenu = currentId === "menu";
+  document.body.classList.toggle("menu-mode", isMenu);
+  document.body.classList.toggle("interstitial-mode", !!(story[currentId] && story[currentId].type === "interstitial"));
+  if (!isMenu) {
+    document.querySelector(".book").style.backgroundImage = "";
+    document.getElementById("menuMusic").pause();
+  }
+  if (isMenu) { renderMenu(); return; }
+  if (currentId === "map") { renderMap(); return; }
+  renderNode(story[currentId]);
+}
+
+// ---------- NAVIGATION / HISTORY ----------
+function renderWithTransition() {
+  const book = document.querySelector(".book");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) { render(); return; }
+  const incoming = story[currentId];
+  const duration = (incoming && incoming.type === "interstitial") ? 975 : 270;
+  book.style.transitionDuration = duration + "ms";
+  book.classList.add("fading");
+  setTimeout(() => {
+    render();
+    book.classList.remove("fading");
+  }, duration);
+}
+
+function pushHistory() {
+  history.push({ id: currentId, state: JSON.parse(JSON.stringify(state)) });
+}
+
+function goTo(nextId, effect) {
+  pushHistory();
+  if (effect) {
+    if (effect.points) state.points += effect.points;
+    if (effect.resolve) state.quests[effect.resolve] = "resolved";
+  }
+  stopNarration();
+  currentId = nextId;
+  renderWithTransition();
+}
+
+function goBack() {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  currentId = prev.id;
+  state = prev.state;
+  stopNarration();
+  renderWithTransition();
+}
+
+function toggleAudio() {
+  state.audioEnabled = !state.audioEnabled;
+  const music = document.getElementById("menuMusic");
+  if (state.audioEnabled) {
+    if (currentId === "menu") { music.currentTime = music.currentTime || 0; music.play().catch(() => {}); }
+  } else {
+    music.pause();
+  }
+  render();
+}
+
+function restartGame() {
+  if (!window.confirm("Ziur zaude? Aurrerapen guztia galduko da.")) return;
+  stopNarration();
+  document.getElementById("menuMusic").pause();
+  history = [];
+  state = { name: "", points: -10, quests: { basajaun: "unresolved", atarrabi: "unresolved", sorginak: "unresolved" }, audioEnabled: state.audioEnabled };
+  currentId = "menu";
+  renderWithTransition();
+}
+
+function updateTopBar() {
+  const backBtn = document.getElementById("topBack");
+  backBtn.style.opacity = history.length ? "1" : "0.35";
+  backBtn.style.pointerEvents = history.length ? "auto" : "none";
+  document.getElementById("topMute").textContent = state.audioEnabled ? "🔇" : "🔈";
+}
+
+document.getElementById("topBack").onclick = () => goBack();
+document.getElementById("topMap").onclick = () => goTo("map");
+document.getElementById("topHints").onclick = () => goTo("hintsScreen");
+document.getElementById("topMute").onclick = () => toggleAudio();
+document.getElementById("topRestart").onclick = () => restartGame();
+
+render();
+</script>
+</body>
+</html>
