@@ -133,6 +133,7 @@
     transition: border-color 0.15s ease, opacity 0.15s ease;
   }
   .top-icon:hover { border-color: var(--gold); }
+  .top-icon.disabled { opacity: 0.35; pointer-events: none; }
 
   .scene-wrap { position: relative; flex: 0 0 auto; }
   .node-id {
@@ -228,6 +229,7 @@
     margin: 0 0 18px;
     max-width: 62ch;
     cursor: pointer;
+    white-space: pre-line;
   }
 
   .listen-row { display: flex; align-items: center; gap: 10px; margin: -6px 0 18px; }
@@ -331,12 +333,23 @@
 
 <script>
 // ---------- STATE ----------
-let state = {
-  name: "",
-  points: -10,          // placeholder threshold — three core quests at +5 each clears it with a little margin
-  quests: { basajaun: "unresolved", atarrabi: "unresolved", sorginak: "unresolved" },
-  audioEnabled: false
-};
+function newState(audioEnabled = false) {
+  return {
+    name: "",
+    items: {},          // what's in the child's pockets: torch, sweets, hat, eguzkilore, bread
+    flags: {},          // one-off things that have happened
+    found: {},          // side places discovered (they then appear in the clearing)
+    kind: {},           // kind deeds along the way (see favour())
+    quests: { basajaun: "open", atarrabi: "open", sorginak: "open" },   // open | declined | resolved
+    declinedEver: {},   // Mari remembers who the child walked away from, even if they went back later
+    facts: [],          // etiquette for Mari, see FACT_ORDER
+    lastFact: null,     // the fact learned most recently (hint nodes read it)
+    lore: [],           // journal entries, in the order learned
+    mari: { revealed: false, peak: 0, fails: 0 },
+    audioEnabled
+  };
+}
+let state = newState();
 let currentId = "menu";
 let history = [];
 
@@ -344,26 +357,143 @@ if (new URLSearchParams(window.location.search).has("dev")) {
   document.body.classList.add("dev-mode");
 }
 
+// Story values (text, labels, next, choices, effects) can be plain values or functions of state.
+const val = v => (typeof v === "function" ? v(state) : v);
+
 function interpolate(text) {
-  return text.replace(/\{name\}/g, state.name || "friend");
+  return String(text || "").replace(/\{name\}/g, state.name || "friend");
 }
+
+// ---------- FAVOUR (bookkeeping only — never shown or narrated) ----------
+// Mari's fire appears in the sky once favour reaches FAVOUR_NEEDED. Each main quest is worth 4.
+// Kind deeds along the way are worth 1 each, but only the first 3 count. So:
+//   all three main quests (12) is always enough, whatever else happened;
+//   two main quests (8) need two kind deeds;
+//   one main quest (4 + 3) is never enough.
+// Favour only ever goes up: walking away from something gives nothing, it never takes away.
+const FAVOUR_NEEDED = 10, MAIN_QUEST_FAVOUR = 4, KINDNESS_CAP = 3;
+const mainDone = s => Object.values(s.quests).filter(q => q === "resolved").length;
+const favour = s => mainDone(s) * MAIN_QUEST_FAVOUR + Math.min(Object.keys(s.kind).length, KINDNESS_CAP);
+
+// ---------- KNOWLEDGE FOR MARI ----------
+// The three real rules for approaching Mari. Whoever teaches the child something teaches the
+// next rule not yet known, always in this order (the shared hint queue) — so every teacher has
+// a line for every rule in HINTS. Each main quest always teaches one. Joanes the shepherd and
+// the lamiña can teach one too, which is how a child with two main quests can still learn all
+// three. Getting a rule wrong in the cave also teaches it, the hard way.
+const FACT_ORDER = ["hika", "noSit", "noBack"];
+const FACTS = {
+  hika:   "Speak to Mari with “hi”, as you would to family — never with “zu”, like a stranger.",
+  noSit:  "Never sit down in front of Mari, even if she offers you a seat.",
+  noBack: "Never turn your back on Mari. Leave walking backwards, facing her, the way you came in."
+};
+const HINTS = {
+  basajaun: {
+    hika:   "“You go to the Lady? Then speak to her plainly, the way you would to your own grandmother — with hi, not zu. She is as old as the mountains. Fancy manners from strangers mean nothing to her.”",
+    noSit:  "“You go to the Lady? Then remember this: in her cave, nobody sits. Not the shepherds who shelter there from storms, not even me. Stay on your feet, however tired you are.”",
+    noBack: "“You go to the Lady? Then when you leave her, do not turn your back. Walk out backwards, step by step, facing her, the way you came in.”",
+    none:   "“You already know how to stand before the Lady. Good. Go — and walk softly in my forest.”"
+  },
+  atarrabi: {
+    hika:   "“You'll be going to see my mother, then. Speak to her with hi, the way family does. Nobody in our house has ever called her zu — it would sound like a stranger knocking at the door.”",
+    noSit:  "“You'll be going to see my mother, then. If she offers you a seat, thank her — but stay standing. Even I have never sat down in front of her.”",
+    noBack: "“You'll be going to see my mother, then. When she sends you away, walk out backwards, facing her. Turning your back on her is the worst rudeness there is.”",
+    none:   "“You'll be going to see my mother, then — and you already know how to behave in front of her. I think she'll like you.”"
+  },
+  sorginak: {
+    hika:   "“In the Lady's house, we all speak to her with hi. Never zu! Zu is for strangers and tax collectors.”",
+    noSit:  "“We've served the Lady longer than anyone can remember, and not one of us has ever sat down in front of her. Neither should you, little one.”",
+    noBack: "“When you leave our Lady, walk out backwards, facing her. We sorginak can do it in the dark without bumping into a thing. You'll just have to be careful.”",
+    none:   "“But you know the Lady's ways already, don't you? Off you go, then!”"
+  },
+  joanes: {
+    hika:   "“She spoke to me as if I were her own grandson, and I answered her the same way — with hi, not zu. My grandmother had told me that was right, and the Lady smiled at me.”",
+    noSit:  "“I was so tired I nearly sat down on a rock in her cave. Something stopped me. Later my grandmother told me: nobody sits before the Lady. Nobody.”",
+    noBack: "“When I left, I walked out backwards, facing her, all the way out of the cave. My grandmother had told me: never turn your back on the Lady.”",
+    none:   "“But you know all about the Lady already, by the look of you.”"
+  },
+  lamina: {
+    hika:   "“Speak to the Lady with hi, as family does. We river folk always have.”",
+    noSit:  "“In the Lady's presence, stay on your feet. Even we lamiak stand before her.”",
+    noBack: "“When you leave the Lady, go out backwards, facing her. Never show her your back.”",
+    none:   "“But you already know the Lady's ways, I think. Go well, little one.”"
+  }
+};
+const hint = giver => s => HINTS[giver][s.lastFact || "none"];
+const knownFacts = s => FACT_ORDER.filter(f => s.facts.includes(f)).map(f => "• " + FACTS[f]).join("\n");
+
+// ---------- JOURNAL ENTRIES ----------
+const LORE = {
+  etxeIzena:     "Old Basque farmhouses have their own names, and families were often known by the name of their house rather than their surname.",
+  eguzkilore:    "The eguzkilore (“sun-flower”) is a dried thistle flower hung on doors to protect the house. Any spirit that wants to come in must first count all its spiky petals — and dawn comes before they finish.",
+  olentzero:     "Olentzero is a charcoal-burner (ikazkin) who lives up in the mountains and comes down to the villages on Christmas Eve.",
+  subila:        "The Gabon-subila is a big log burned all through Christmas Eve night, to protect the house, the animals and the family.",
+  basajaun:      "Basajaun, lord of the forest: huge and hairy, with one foot like a person's and one round foot. He protects the shepherds' flocks and howls to warn them when wolves or storms are coming. Shepherds leave him bread.",
+  saw:           "Legend says people learned to sow wheat and to make saws from the basajaunak — tricked out of them by clever San Martin Txiki, who copied the saw from the edge of a chestnut leaf.",
+  jentilak:      "The jentilak were giants of the old times. People said they put up the great stone monuments on the hills, and threw boulders from mountain to mountain.",
+  atarrabi:      "Atarrabi is Mari's good son. He has no shadow: he left it behind long ago, taking on a burden that should have fallen to his brother.",
+  mikelats:      "Mikelats is Mari's other son — a troublemaker who sends hail down onto the farmers' fields.",
+  sorginak:      "The sorginak are Mari's household: they serve her and keep her secrets. Long ago, their name was used to blame ordinary, innocent women for storms and sickness. That was fear, not truth.",
+  lamiak:        "Lamiak are river women with webbed feet like a duck's, who comb their long hair with golden combs. They help people who are kind to them — some say they built bridges in a single night.",
+  galtzagorriak: "Galtzagorriak (“red-trousers”) are tiny, tireless helpers kept in a needle case. They always want work — “Zer egin? Zer egin?” — and if you run out of jobs for them, watch out!",
+  mari:          "Mari, the Lady, lives in caves high on mountains like Anboto, Txindoki and Aizkorri, and flies between them as a ball of fire. When Anboto wears a cloud, she is at home. She can't abide lies, boasting or broken promises.",
+  sugaar:        "Sugaar is Mari's companion: a great serpent of fire and storm."
+};
+
+// ---------- MARI'S MOUNTAINS ----------
+// Mari starts on Anboto. Each time the child gets her rules wrong, she flies to the next one.
+const PEAKS = [
+  { id: "anboto",   name: "Anboto" },
+  { id: "txindoki", name: "Txindoki" },
+  { id: "aizkorri", name: "Aizkorri" }
+];
+const peak = s => PEAKS[s.mari.peak];
+
+// In the cave Mari asks one honest question, chosen from what the child actually did.
+function honesty(s) {
+  if (s.declinedEver.basajaun) return {
+    question: "“The lord of the forest tells me a child ran away from him tonight. Was it thou?”",
+    truth: "“Yes. It was me. I was scared.”", lie: "“No — that wasn't me.”",
+    answer: "“Afraid — and still thou camest here, and told me the truth. That is worth more than never being afraid.”" };
+  if (s.declinedEver.atarrabi) return {
+    question: "“My son Atarrabi tells me a child walked away from him on the hermitage hill tonight. Was it thou?”",
+    truth: "“Yes. It was me.”", lie: "“No — that wasn't me.”",
+    answer: "“So it was. And now thou hast told me so, to my face. Good.”" };
+  if (s.declinedEver.sorginak) return {
+    question: "“My sorginak tell me a child ran away from their fire tonight. Was it thou?”",
+    truth: "“Yes. I was scared of them.”", lie: "“No — that wasn't me.”",
+    answer: "“Many are. Few say so. Thou art honest, at least.”" };
+  if (s.flags.followedMikelats) return {
+    question: "“My son Mikelats boasts that a child followed his shortcut tonight. Was it thou?”",
+    truth: "“Yes. I thought it would be quicker.”", lie: "“No — I'd never follow him.”",
+    answer: "“Ha! Many have. Few admit it.”" };
+  return {
+    question: "“Thou hast done a great deal tonight. Didst thou do it all alone?”",
+    truth: "“No — lots of people helped me.”", lie: "“Yes! All by myself.”",
+    answer: "“Good. Only fools think they do great things alone.”" };
+}
+
+// Shorthands for the story below.
+const NEXT = (next, effect) => [{ label: "Jarraitu", next, effect }];
+const TO_CLEARING = { label: "Back to the clearing", next: "map" };
 
 // ---------- STORY DATA ----------
 const story = {
   infoScreen: {
     image: "empty",
-    text: "(placeholder) This is where a short explanation of the game could go — how to play, who it's for, anything you'd want a grown-up or curious kid to read first.",
+    text: "This is a story where you choose what happens. Read each page, then tap what you want to do next.\n\n❓ opens your journal: everything you've learned on your journey.\n🗺 takes you back to the clearing, once you've found it.\n⬅ undoes your last choice — but not in Mari's cave!\n\nBest read together with a grown-up.",
     choices: [{ label: "Menura itzuli", next: "menu" }]
   },
   aboutScreen: {
     image: "empty",
-    text: "(placeholder) This is where a short note about the story and its sources could go — the mythology it's based on, who made it, and why.",
+    text: "This story is built from real Basque folklore, most of it written down from country people in the 20th century by José Miguel de Barandiaran and others.\n\nReal: the Christmas log (Gabon-subila); the eguzkilore; Olentzero the charcoal-burner; Basajaun and his bargain with the shepherds; San Martin Txiki and the saw; Atarrabi, Mikelats and the lost shadow; the sorginak as Mari's household, and the innocent people wrongly accused under that name; the lamiak and their golden combs; the galtzagorriak; the jentilak and their stones; Mari's mountains, her flight as a ball of fire, her rules (speak with hi, never sit, never turn your back) and her hatred of lies; Sugaar the fire serpent.\n\nInvented for this story: Olentzero and Mari Domingi's everlasting fire, and Sugaar lighting it again; Atarrabi's storm bell; the lost lambs, the lost comb and the other errands; the way Mari decides who is worthy. Mari Domingi has nothing to do with the goddess Mari — they only share a name.",
     choices: [{ label: "Menura itzuli", next: "menu" }]
   },
   hintsScreen: {
     image: "empty",
-    text: "(placeholder) This is where the child's journal of clues and lore would go — nothing to show here yet. Use the back arrow above to return to where you were.",
-    choices: []
+    text: s => "HOW TO STAND BEFORE MARI\n" + (knownFacts(s) || "Nothing yet.") +
+      "\n\nTHINGS I'VE LEARNED\n" + (s.lore.length ? s.lore.map(l => "• " + LORE[l]).join("\n") : "Nothing yet."),
+    choices: [{ label: "Close the journal", back: true }]
   },
   introWinter: {
     image: "winterVillage",
@@ -404,45 +534,166 @@ const story = {
   dayHome: {
     image: "goizekoelurra",
     text: 'Elurra ari du kanpoan. "Maleta prestatu al duzu?" galdetzen dute gurasoek. \u201cEz dakit zertarako joan behar dugun baserrira gabonetan, herrian lagunekin egon beharrean\u201d pentsatzen duzu, marmarka. "Bai, prestatu dut..."',
-    choices: [{ label: "Jarraitu", next: "dayCar" }]
+    // Whatever the child packs turns out useful somewhere later — there's no wrong answer.
+    choices: [
+      { label: "Pack your torch", next: "dayCar", effect: { item: "torch" } },
+      { label: "Pack a bag of sweets", next: "dayCar", effect: { item: "sweets" } },
+      { label: "Pack your woolly hat", next: "dayCar", effect: { item: "hat" } }
+    ]
   },
   dayCar: {
-    image: "empty",
+    image: "carRoad",
     text: "Egun osoa bidean pasako dugu hemen. \u201cEderra dugu elurte honekin, ez dakit iritsiko garen!\u201d dio aitak. Ez dakit zergatik kexatzen diren helduak elurraz. Gidatu beharrean elurretan jolasean arituko bagina, alde ederrean.... ederra litzateke urteko elurra horrela egingo balu",
-    choices: [{ label: "Jarraitu", next: "dayArrival" }]
+    choices: [
+      { label: "Look out of the window at the snowy forest", next: "dayCarWindow" },
+      { label: "Ask what the baserri is like", next: "dayCarHouse" },
+      { label: "Close your eyes and sleep", next: "dayArrival" }
+    ]
+  },
+  dayCarWindow: {
+    image: "carRoad",
+    text: "Between the trees, just for a second, you think you see something huge and hairy standing by the road, watching the car go past. You blink — and it's only an old tree stump. Probably.",
+    choices: NEXT("dayArrival")
+  },
+  dayCarHouse: {
+    image: "carRoad",
+    text: "“The house is more than three hundred years old,” says ama. “It has its own name, like all the old baserriak. For a long time, people round here called our family by the name of the house, not by our surname.”\n\nA house with its own name. Weird.",
+    choices: NEXT("dayArrival", { lore: "etxeIzena" })
   },
   dayArrival: {
     image: "baserri",
     text: "Horra baserria. zihurrenik gabonetan ere lekak edo babarrunak jango ditugula. Ezin txakurrarekin jolastu, jostailurik ez, eta okerrena, dinosaurioen garaiko telebista zahar bat...",
-    choices: [{ label: "Jarraitu", next: "dayBored" }]
+    choices: NEXT("dayStormNight")
+  },
+  // The storm in the prologue happens tonight — this is where the child's day catches up with it.
+  dayStormNight: {
+    image: "stormNight",
+    text: "That night, the storm arrives. The wind howls round the old baserri, the shutters bang, and the whole house creaks like a ship at sea.",
+    choices: [
+      { label: "Pull the blankets over your head", next: "dayNextDay" },
+      { label: "Get up and look out of the window", next: "dayStormWindow" }
+    ]
+  },
+  dayStormWindow: {
+    image: "stormNight",
+    text: "Snow is flying sideways past the glass. Far away, high on the mountain, a tiny warm light is glowing in the dark. As you watch, it flickers... flickers... and goes out.",
+    choices: [{ label: "Go back to bed", next: "dayNextDay" }]
+  },
+  dayNextDay: {
+    type: "interstitial",
+    text: "The next morning...",
+    next: "dayBored",
+    hold: 2200
   },
   dayBored: {
-    image: "empty",
+    image: "baserriInside",
     text: "Aiton-amonen etxea arraroa da. Eskailerek soinua ateratzen dute hanka jartzen dudan bakoitzean, minagatik kexatuko balira bezela. Eta paretak ezagutzen ez ditudan pertsonen argazkiz beteak daude. Zihur ganbaran badutela jolasteko zerbait... Gurasoak beti dabiltza ganbaran dauden trasteei buruz hizketan...",
     choices: [{ label: "Jarraitu", next: "dayChoice" }]
   },
   dayChoice: {
-    image: "empty",
+    image: "baserriInside",
     text: "Agian ganbarara joan beharko nuke, orain gurasoak lanpetuta daudela. Gurasoek kanpoan jolasteko esan didate lehen... ez legoke gaizki elurrarekin zerbait egitea baina... ez dakit ba",
     choices: [
       { label: "Kanpora joan, elurrarekin jolastera", next: "dayOutside" },
-      { label: "Ganbarara igo, gurasoak konturatu aurretik", next: "dayAttic" }
+      { label: "Ganbarara igo, gurasoak konturatu aurretik", next: "dayAttic" },
+      { label: "Go and find amona in the kitchen", next: "dayKitchen" }
     ]
   },
   dayAttic: {
-    image: "empty",
+    image: "attic",
     text: "Hau bai leku bitxia, nik uste mila urte pasa direla norbaitek hau garbitu zuenetik. Traste zaharrez beteta eta nik ezin ezer ikusi. ",
-    choices: [{ label: "Jarraitu", next: "dayParents" }]
+    choices: [
+      { label: "Switch on your torch", when: s => s.items.torch, next: "dayAtticTorch" },
+      { label: "Feel your way forward in the dark", next: "dayAtticDark" },
+      { label: "Give up and go back down", next: "dayParents" }
+    ]
+  },
+  dayAtticTorch: {
+    image: "attic",
+    text: "In the torch beam: a big wooden chest carved with a sun, a baby's cradle, a stack of old baskets — and nailed to a beam, a dried flower like a spiky silver sun.",
+    choices: [{ label: "Take a closer look at the flower", next: "dayAtticFlower" }]
+  },
+  dayAtticDark: {
+    image: "attic",
+    text: "You shuffle forward with your hands out... and touch something dry and prickly, like a hedgehog made of paper. You carry it over to the little window to see what it is.",
+    choices: [{ label: "Look at it in the light", next: "dayAtticFlower" }]
+  },
+  dayAtticFlower: {
+    image: "eguzkilore",
+    text: "It's a dried flower as big as your hand, silver and spiky, like a little sun. There's a label tied to it, in old handwriting: “eguzkilore”.",
+    choices: [
+      { label: "Put it in your pocket", next: "dayParents", effect: { item: "eguzkilore" } },
+      { label: "Leave it where it was", next: "dayParents" }
+    ]
+  },
+  dayKitchen: {
+    image: "kitchen",
+    text: "Amona is at the stove, patting out talo — round, flat corn breads — and cooking them on a hot iron. “Bored already?” she laughs. Beside the back door hangs a dried, spiky flower.",
+    choices: [
+      { label: "Ask about the flower by the door", next: "dayKitchenFlower" },
+      { label: "Ask about Olentzero", next: "dayKitchenOlentzero" },
+      { label: "Go outside", next: "dayOutside" }
+    ]
+  },
+  dayKitchenFlower: {
+    image: "eguzkilore",
+    text: "“That's an eguzkilore — a sun-flower. It keeps bad things out of the house. Any spirit that wants to come in has to count every one of its spiky petals first — and before they've finished, the sun comes up!” She winks. “There's a spare one on the windowsill, if you want it.”",
+    effect: { lore: "eguzkilore" },
+    choices: [
+      { label: "Take the spare eguzkilore", next: "dayKitchenMore", effect: { item: "eguzkilore" } },
+      { label: "Leave it on the windowsill", next: "dayKitchenMore" }
+    ]
+  },
+  dayKitchenOlentzero: {
+    image: "kitchen",
+    text: "“Olentzero? He's a charcoal-burner — an ikazkin. He lives up in the mountains all year round, making charcoal, and on Christmas Eve he comes down to the villages.” She looks out of the window at the white mountain. “Last night, in the storm, I could have sworn I saw his fire go out up there. Silly old woman.”",
+    effect: { lore: "olentzero" },
+    choices: [{ label: "Jarraitu", next: "dayKitchenMore" }]
+  },
+  dayKitchenMore: {
+    image: "kitchen",
+    text: "Amona flips another talo onto the plate. “Anything else? Or are you going outside to get some fresh air, like your parents told you?”",
+    choices: [
+      { label: "Ask about the flower by the door", when: s => !s.lore.includes("eguzkilore"), next: "dayKitchenFlower" },
+      { label: "Ask about Olentzero", when: s => !s.lore.includes("olentzero"), next: "dayKitchenOlentzero" },
+      { label: "Go outside", next: "dayOutside" }
+    ]
   },
   dayParents: {
-    image: "empty",
+    image: "attic",
     text: "\u201cZer zabiltza hor goian?\u201d kaka zaharra, ezaltzuten beste ezer egiteko \u201c Irten zaitez kanpora, gero elurretara joan nahi duzula kexatzen zara eta\u201d",
     choices: [{ label: "Marmar artean kanpora ateratzen zara...", next: "dayOutside" }]
   },
   dayOutside: {
     image: "basoa",
     text: "A zer nolako hotza. Zihurrenik elurra ere izoztua dagoela panpina egiteko. Ea basoan adar batzuk aurkitzen ditudan. Pixkat bat iluna dirudi, halabaina...",
-    choices: [{ label: "Jarraitu", next: "introMeetMariDomingi" }]
+    choices: [
+      { label: "First, see what aitona is doing by the woodshed", next: "dayAitonaLog" },
+      { label: "Go into the forest to look for branches", next: "introMeetMariDomingi" }
+    ]
+  },
+  dayAitonaLog: {
+    image: "aitonaLog",
+    text: "Aitona is wrestling with a huge, knobbly log, half buried in the snow. “This,” he puffs, “is our Gabon-subila. Our Christmas log. Tonight it goes on the fire and burns all night long, to keep the house safe — and everyone in it. Your great-great-grandparents did exactly the same.”",
+    choices: [
+      { label: "Help him drag it to the house", next: "dayAitonaHelp" },
+      { label: "Throw a snowball at him", next: "dayAitonaSnowball" },
+      { label: "Leave him to it and go into the forest", next: "introMeetMariDomingi" }
+    ]
+  },
+  dayAitonaSnowball: {
+    image: "aitonaLog",
+    text: "It hits him right on the txapela. For a moment he just stands there with snow dripping off his nose — then he roars with laughter and throws one back, much harder. Then he goes back to his log, puffing.",
+    choices: [
+      { label: "Help him drag the log to the house", next: "dayAitonaHelp" },
+      { label: "Go into the forest", next: "introMeetMariDomingi" }
+    ]
+  },
+  dayAitonaHelp: {
+    image: "aitonaLog",
+    text: "Together you heave and pull and slip and heave again, until the great log is safe by the door. “Ha! Strong as an ox,” says aitona. “Now go and play — but don't go too far into the trees. It'll be dark soon.”",
+    effect: { kind: "log", lore: "subila" },
+    choices: [{ label: "Go into the forest", next: "introMeetMariDomingi" }]
   },
   introMeetMariDomingi: {
     image: "maridomingi",
@@ -453,99 +704,1009 @@ const story = {
   introSendOff: {
     image: "maridomingi",
     text: "\u201c{name} — entzun: Olentzeroren sua... nola esan... su berezi bat da. Gabonetarako behar dugu baino ekaitzarekin itzali egin da. \u201d",
-    choices: [{ label: "Jarraitu", next: "map" }]
+    choices: NEXT("mdQuestions")
   },
 
-  basajaunStart: {
-    image: "forestDay",
-    text: "You follow the old path deeper into the woods, until the trees close in around you.",
-    choices: [{ label: "Jarraitu", next: "encounter" }]
+  // ===================== MARI DOMINGI: WHAT'S GOING ON =====================
+  // Questions the child can ask in any order. "Set off" only appears once they've heard the plan.
+  mdQuestions: {
+    image: "maridomingi",
+    text: "Mari Domingi takes both your hands. Hers are as cold as snow. “Tonight is Christmas Eve. If the fire isn't burning again by tonight, Olentzero can't finish the presents. Not for anyone.”",
+    choices: s => MD_QUESTIONS
   },
-  encounter: {
-    image: "basajaun",
-    text: "Basajaun looked at you, surprised — he wasn't expecting anyone here. \u201cWhat are you doing here?\u201d he says, taking a step closer.",
-    narration: "The undergrowth had gone still. Then, between the dark trunks, something moved — tall as the trees themselves, hair falling past his knees like moss over old stone. Basajaun, Lord of the Forest, had not expected anyone this deep in his woods. \u201cWhat are you doing here?\u201d he rumbled, low as distant thunder, and took one slow step closer.",
+  mdAsk: {
+    image: "maridomingi",
+    text: "Mari Domingi waits, rubbing her hands to keep warm. “What else?”",
+    choices: s => MD_QUESTIONS
+  },
+  mdMatches: {
+    image: "maridomingi",
+    effect: { flag: "mdMatches" },
+    text: "“Ha! If only. That fire was lit by Sugaar himself, the fire serpent of the mountains, long, long ago. Only Sugaar can light it again. And Sugaar doesn't listen to anybody... except the Lady. Mari. She lives up in the mountains, in the caves.”",
+    choices: NEXT("mdAsk")
+  },
+  mdWho: {
+    image: "maridomingi",
+    effect: { flag: "mdWho" },
+    text: "“I'm Mari Domingi. I help Olentzero with... well, with everything.” She smiles for the first time. “He'd be lost without me. Don't tell him I said so.”",
+    choices: NEXT("mdAsk")
+  },
+  mdWhy: {
+    image: "maridomingi",
+    effect: { flag: "mdWhy" },
+    text: "“Because the forest folk don't talk to grown-ups any more. Grown-ups are too busy, and too sure of themselves. But a child...” She shrugs. “And because you were the one who walked into the woods.”",
+    choices: NEXT("mdAsk")
+  },
+  mdPlan: {
+    image: "maridomingi",
+    effect: { flag: "mdPlan" },
+    text: "“The Lady only listens to people she thinks are worthy. And nobody knows where she is tonight — she moves between her mountains. But the forest folk know her ways: Basajaun in the deep forest, Atarrabi on the hermitage hill, the sorginak up in the high meadow. Help them. Listen to them. And be kind to anyone you meet on the way. When the Lady is ready to see you — you'll know.”",
     choices: [
-      { label: "Run away and say nothing", next: "ranAway" },
-      { label: "\u201cSorry — I didn't mean to disturb you.\u201d Stay, respectfully.", next: "stayed", effect: { points: 5, resolve: "basajaun" } }
+      { label: "Set off", next: "clearingFirst" },
+      { label: "Ask something else first", next: "mdAsk" }
     ]
   },
-  ranAway: {
-    image: "empty",
-    text: "You turn and run. Behind you, only silence. Whatever Basajaun might have told you, you'll have to learn some other way — maybe another time.",
+  clearingFirst: {
+    image: "mapScene",
+    text: "Mari Domingi leads you to a wide clearing, kneels, and lights a little fire of twigs. “Not a real fire — not like ours. But it'll keep me warm while I wait for you.”\n\nPaths lead off between the trees in every direction.",
+    choices: NEXT("map")
+  },
+
+  // ===================== THE CLEARING (hub) =====================
+  // Paths appear here as the child discovers them (see LOCATIONS).
+  map: {
+    image: "mapScene",
+    text: s => {
+      if (s.mari.revealed && s.mari.fails) return `You're back in the clearing. Mari Domingi's little fire crackles. Far away, a faint glow hangs over ${peak(s).name}, where the Lady's fire flew.`;
+      if (s.mari.revealed) return "You're back in the clearing. Mari Domingi's little fire crackles. Over the peak of Anboto, a cloud is glowing faintly: the Lady is at home.";
+      return "You're in the clearing. Mari Domingi's little fire crackles, and paths lead off between the trees.";
+    },
+    prompt: "Where will you go, {name}?",
+    choices: s => LOCATIONS
+  },
+  mdHub: {
+    image: "maridomingi",
+    text: s => {
+      const say = [];
+      if (s.flags.galtzaWood) say.push("“Somebody sent me a mountain of firewood, carried by dozens of little men in red trousers. I wonder who.” She winks.");
+      if (s.mari.revealed && s.mari.fails) say.push(`“Don't lose heart. The Lady moves between her mountains — you saw her fire go to ${peak(s).name}. Go and try again, and think hard about what went wrong.”`);
+      else if (s.mari.revealed) say.push(`“The Lady is waiting for you on ${peak(s).name}. Remember everything you've been taught.”`);
+      else if (mainDone(s) === 0) say.push("“Basajaun in the deep forest, Atarrabi up on the hermitage hill, the sorginak in the high meadow. Start with whichever you like.”");
+      else say.push("“You're doing well. The Lady sees everything — every kindness too. Keep going.”");
+      const missing = FACT_ORDER.length - s.facts.length;
+      if (missing > 0 && (mainDone(s) > 0 || s.mari.revealed)) say.push("“You still don't know everything about how to behave in front of her. Someone out there could tell you.”");
+      if (Object.values(s.quests).includes("declined")) say.push("“And it's never too late to go back to someone you walked away from.”");
+      return "Mari Domingi looks up from her little fire.\n\n" + say.join("\n\n");
+    },
+    choices: [
+      { label: "Ask what the Lady is like", when: s => !s.lore.includes("mari"), next: "mdLady" },
+      { label: "Back to the paths", next: "map" }
+    ]
+  },
+  mdLady: {
+    image: "maridomingi",
+    effect: { lore: "mari" },
+    text: "“Mari? She's older than the mountains. She lives in caves high up on the peaks — Anboto, Txindoki, Aizkorri — and flies between them as a ball of fire. She can't abide lies, or boasting, or people who break their word. But she's fair. Always fair.”",
+    choices: [{ label: "Back to the paths", next: "map" }]
+  },
+
+  // Mari shows herself the first time the child comes back to the clearing with enough favour
+  // (see enterNode). The tally stops mattering after this: only the cave decides.
+  mariReveal: {
+    image: "fireball",
+    effect: { mariReveal: true, lore: "mari" },
+    text: "As you come back into the clearing, Mari Domingi grabs your arm and points at the sky. A ball of fire is sailing slowly over the treetops, trailing sparks, towards the dark peak of Anboto. A cloud settles over the summit like a hat.\n\n“That's her,” Mari Domingi breathes. “The Lady, going home. When Anboto wears its cloud, she's in. You've done it, {name}. She's ready to see you.”",
+    choices: NEXT("mariReveal2")
+  },
+  mariReveal2: {
+    image: "maridomingi",
+    text: "“Before you go, think about everything they taught you. How to speak to her. How to stand. How to leave. The Lady forgives a lot of things — but not bad manners in her own house.”",
     choices: [{ label: "Back to the clearing", next: "map" }]
   },
-  stayed: {
+
+  // ===================== BASAJAUN (main quest: patience and respect) =====================
+  basajaunStart: {
+    image: "forestDay",
+    text: "You follow the old path deeper into the woods, until the trees close in around you. The snow here is deep and untouched. Almost.",
+    choices: [
+      { label: "Look closer at the snow", when: s => s.quests.basajaun !== "resolved", next: "basajaunTracks" },
+      { label: "Visit Basajaun by his fire", when: s => s.quests.basajaun === "resolved", next: "basajaunRevisit" },
+      { label: "Take the narrow path towards the sound of sheep bells", next: "hutPath" },
+      TO_CLEARING
+    ]
+  },
+  basajaunTracks: {
+    image: "tracks",
+    effect: { lore: "basajaun" },
+    text: s => "Footprints. Enormous ones. One is like a person's bare foot, only three times bigger. The other is perfectly round, like the end of a log. Left, round, left, round — they lead off between the trees." +
+      (s.items.torch ? "\n\nYou switch on your torch. In the beam, the tracks look very fresh." : ""),
+    choices: [
+      { label: "Follow the strange tracks", next: s => s.flags.robinSeen ? "basajaunMeet" : "basajaunRobin" },
+      { label: "Go back to the clearing — quickly", next: "map" }
+    ]
+  },
+  basajaunRobin: {
+    image: "robin",
+    effect: { flag: "robinSeen" },
+    text: "Beside the tracks, a little robin is caught in a bramble, flapping and flapping, its feathers full of snow.",
+    choices: [
+      { label: "Carefully free it", next: "basajaunRobinFreed" },
+      { label: "Leave it — you're in a hurry", next: "basajaunMeet" }
+    ]
+  },
+  basajaunRobinFreed: {
+    image: "robin",
+    effect: { kind: "robin" },
+    text: "You untangle the thorns one by one. The robin hops onto your glove, shakes the snow off its wings — and flies away along the line of the tracks, as if it were showing you the way.",
+    choices: [{ label: "Follow the robin and the tracks", next: "basajaunMeet" }]
+  },
+  basajaunMeet: {
+    image: "basajaun",
+    text: "Basajaun looked at you, surprised — he wasn't expecting anyone here. “What are you doing here?” he says, taking a step closer.",
+    narration: "The undergrowth had gone still. Then, between the dark trunks, something moved — tall as the trees themselves, hair falling past his knees like moss over old stone. Basajaun, Lord of the Forest, had not expected anyone this deep in his woods. “What are you doing here?” he rumbled, low as distant thunder, and took one slow step closer.",
+    choices: [
+      { label: "Run away and say nothing", next: "basajaunRanAway", effect: { decline: "basajaun" } },
+      { label: "Shout for help", next: "basajaunShout" },
+      { label: "“Sorry — I didn't mean to disturb you.” Stay, respectfully.", next: "basajaunStayed" }
+    ]
+  },
+  basajaunShout: {
+    image: "basajaun",
+    text: "Your voice bounces off the trees and is swallowed by the snow. Nobody comes. Basajaun tilts his huge head. “Why shout? I have not hurt you.”",
+    choices: [
+      { label: "Run away", next: "basajaunRanAway", effect: { decline: "basajaun" } },
+      { label: "“Sorry. I was scared.” Stay where you are.", next: "basajaunStayed" }
+    ]
+  },
+  basajaunRanAway: {
+    image: "forestDay",
+    text: "You turn and run. Behind you, only silence. Whatever Basajaun might have told you, you'll have to learn some other way — or come back another time.",
+    choices: [TO_CLEARING]
+  },
+  basajaunStayed: {
     image: "fireside",
-    text: "Basajaun studies you a moment longer, then something in his face eases. \u201cNot many stay,\u201d he says. \u201cCome — sit by the fire, and tell me why you've come.\u201d",
-    narration: "For a long moment neither of you moved. Then, slowly, something in the giant's face eased — the way a held breath finally lets go. \u201cNot many stay,\u201d he said, quieter now. \u201cCome. Sit by the fire, and tell me why you've come.\u201d",
-    choices: [{ label: "Jarraitu", next: "map" }]
+    text: "Basajaun studies you a moment longer, then something in his face eases. “Not many stay,” he says. “Come. Sit by my fire.”",
+    narration: "For a long moment neither of you moved. Then, slowly, something in the giant's face eased — the way a held breath finally lets go. “Not many stay,” he said, quieter now. “Come. Sit by my fire.”",
+    choices: NEXT("basajaunFire")
+  },
+  basajaunFire: {
+    image: "fireside",
+    text: "You sit by his fire. Basajaun lowers himself down on the other side, creaking like an old tree, and says nothing at all. He just watches the flames. And the snow. And you.\n\nThe silence goes on, and on, and on.",
+    choices: s => BASAJAUN_FIRE_CHOICES
+  },
+  basajaunTooSoon: {
+    image: "fireside",
+    text: "Basajaun grunts and turns his face away. “You people. Always in a hurry. The forest does not hurry.”\n\nHe goes quiet again.",
+    choices: s => BASAJAUN_FIRE_CHOICES.slice(1)
+  },
+  basajaunWait: {
+    image: "fireside",
+    text: "You wait. The fire pops. Far away, an owl calls. Snow slides off a branch with a soft thump. You wait some more.\n\nAt last, Basajaun speaks. “The shepherds leave me bread. When the wolves or a storm are coming, I howl from the mountain to warn them. That is our bargain.” He looks at you. “You waited. Few of your kind do. Now — why are you here?”",
+    choices: NEXT("basajaunTell")
+  },
+  basajaunBread: {
+    image: "fireside",
+    text: "You hold out the bread. Basajaun's eyebrows rise. He takes it delicately between two huge fingers and sniffs it. “Joanes' bread,” he rumbles. “So you know the old bargain: bread for the forest, and I keep watch over the flocks.” He eats it in one bite. “Now — why are you here?”",
+    choices: NEXT("basajaunTell")
+  },
+  basajaunSweets: {
+    image: "fireside",
+    text: "He sniffs the sweets suspiciously — then tips the whole bag into his mouth, paper and all. His eyes go wide. For the first time, he laughs: a sound like rocks rolling down a mountain. “Strange food. Good food. Now — why are you here?”",
+    choices: NEXT("basajaunTell")
+  },
+  basajaunLeave: {
+    image: "forestDay",
+    text: "You get up and walk away. Behind you, Basajaun says nothing at all. Maybe another time.",
+    choices: [TO_CLEARING]
+  },
+  basajaunTell: {
+    image: "fireside",
+    text: "You tell him about the storm, and Olentzero's fire, and Mari Domingi. Basajaun listens, nodding slowly. “Only Sugaar could light a fire like that again. And only the Lady can ask Sugaar for anything.”",
+    choices: [
+      { label: "Ask how he knows so much", next: "basajaunSaw" },
+      { label: "Ask him about the Lady", next: "basajaunHint" }
+    ]
+  },
+  basajaunSaw: {
+    image: "fireside",
+    effect: { lore: "saw" },
+    text: "“My people knew many things before yours did. How to sow wheat. How to make a saw. A clever little man called Martin tricked those secrets out of us, long ago — he copied the saw from the edge of a chestnut leaf.” He almost smiles. “We were very angry. Now... I think it is good that people have saws.”",
+    choices: [{ label: "Ask him about the Lady", next: "basajaunHint" }]
+  },
+  basajaunHint: {
+    image: "fireside",
+    effect: { resolve: "basajaun", learn: true },
+    text: hint("basajaun"),
+    choices: [TO_CLEARING]
   },
   basajaunRevisit: {
     image: "fireside",
-    text: "Basajaun nods to you from beside his fire. \u201cYou already know what I know,\u201d he says.",
-    choices: [{ label: "Back to the clearing", next: "map" }]
-  },
-  mariStub: {
-    image: "empty",
-    text: "Word has reached you: Mari has been seen near Anboto. (Her cave isn't built yet — this is just here to prove she appears once your path allows it.)",
-    choices: [{ label: "Back to the clearing", next: "map" }]
+    text: "Basajaun nods to you from beside his fire. “You already know what I know,” he says.",
+    choices: [TO_CLEARING]
   },
 
-  atarrabiEncounter: {
-    image: "atarrabi",
-    text: "(placeholder) Atarrabi looks up as you approach. \u201cNot many find their way here,\u201d he says.",
+  // ===================== JOANES THE SHEPHERD (side: the lost lambs) =====================
+  hutPath: {
+    image: "pasture",
+    effect: { found: "hut" },
+    text: "The narrow path climbs out of the trees onto a high pasture. A little stone hut — a txabola — huddles against the hill with smoke curling from its roof. Nearby, huge flat stones lean together like a stone table. Someone is calling “Txo! Txo!”, and sheep bells are ringing all over the hillside.",
     choices: [
-      { label: "(placeholder) Leave without asking", next: "atarrabiDeclined" },
-      { label: "(placeholder) Ask for his help", next: "atarrabiHelped", effect: { points: 5, resolve: "atarrabi" } }
+      { label: "Go to the hut", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
+      { label: "Look at the huge stones", when: s => !s.lore.includes("jentilak"), next: "jentilStones" },
+      { label: "Go back down to the forest path", next: "basajaunStart" },
+      TO_CLEARING
+    ]
+  },
+  jentilStones: {
+    image: "jentilarri",
+    effect: { lore: "jentilak" },
+    text: "Up close, the stones are taller than a grown-up, with one enormous flat stone balanced across the top, like the roof of a tiny house. No person could ever have lifted that. The old people said the jentilak — the giants of the old times — put stones like these on the hills, and threw boulders from one mountain to another.",
+    choices: [
+      { label: "Go to the hut", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
+      TO_CLEARING
+    ]
+  },
+  joanesMeet: {
+    image: "joanes",
+    text: "An old shepherd in a long cloak, his beard white with frost and his head bare, is trying to round up a scattered flock with a crooked stick. “The storm!” he says. “Blew my sheep all over the mountain — and my txapela with them. Three lambs still missing, and my old legs...” He peers at you. “You don't look much like a shepherd.”",
+    choices: [
+      { label: "Offer to help find the lambs", next: "lambsHub" },
+      { label: "Ask him about Basajaun", when: s => !s.flags.joanesTalk, next: "joanesTalk" },
+      { label: "Say sorry, you can't stop", next: "map" }
+    ]
+  },
+  joanesTalk: {
+    image: "joanes",
+    effect: { flag: "joanesTalk", lore: "basajaun" },
+    text: "“Basajaun? Best neighbour a shepherd ever had. When wolves or a storm are coming, he gives a great howl from the mountain and we bring the sheep in. Every night I leave him a piece of bread on the wall, and every morning it's gone.”",
+    choices: [
+      { label: "Offer to help find the lambs", next: "lambsHub" },
+      { label: "Say sorry, you can't stop", next: "map" }
+    ]
+  },
+  // Three lambs, found in any order.
+  lambsHub: {
+    image: "pasture",
+    text: s => {
+      const n = ["lambStream", "lambRocks", "lambBramble"].filter(f => s.flags[f]).length;
+      if (n === 0) return "“Listen,” says Joanes. “Hear the bells?” Three little bells, far apart: one down by the frozen stream, one up among the rocks, one in the bramble patch.";
+      if (n === 3) return "That's all three! The lambs trot behind you, bells jingling.";
+      return `That's ${n === 1 ? "one" : "two"}. You stop and listen for the ${n === 1 ? "other bells" : "last bell"}.`;
+    },
+    choices: [
+      { label: "Down by the frozen stream", when: s => !s.flags.lambStream, next: "lambStream" },
+      { label: "Up among the rocks", when: s => !s.flags.lambRocks, next: "lambRocks" },
+      { label: "In the bramble patch", when: s => !s.flags.lambBramble, next: "lambBramble" },
+      { label: "Bring them back to Joanes", when: s => s.flags.lambStream && s.flags.lambRocks && s.flags.lambBramble, next: "lambsDone" }
+    ]
+  },
+  lambStream: {
+    image: "lambs",
+    effect: { flag: "lambStream" },
+    text: "By the stream, a lamb is stranded on a rock in the middle of the ice, bleating miserably. You test the ice with one foot — it holds — and you carry the lamb back. It's heavier than it looks, and it licks your ear.",
+    choices: [{ label: "Listen for the next bell", next: "lambsHub" }]
+  },
+  lambRocks: {
+    image: "lambs",
+    effect: { flag: "lambRocks" },
+    text: "Up among the rocks, a lamb has its bell caught on a root and can't move. You unhook it, and it bounces off down the hill straight towards the hut as if it had known the way all along.",
+    choices: [{ label: "Listen for the next bell", next: "lambsHub" }]
+  },
+  lambBramble: {
+    image: "lambs",
+    effect: { flag: "lambBramble" },
+    text: s => "The bramble patch is dark and tangled. " +
+      (s.items.torch ? "Your torch picks out two shining eyes, low down — a lamb, hiding from the wind." : "You crawl in on your hands and knees, following the bell, until you bump noses with a very surprised lamb.") +
+      " It's more than happy to be carried out.",
+    choices: [{ label: "Listen for the next bell", next: "lambsHub" }]
+  },
+  lambsDone: {
+    image: "joanes",
+    effect: { kind: "lambs", item: "bread", learn: true },
+    text: "Joanes counts his lambs twice, then laughs and hugs you. He smells of smoke and sheep. “Here — bread and cheese for your journey.”\n\nThen he looks at you more carefully. “You're on your way to the Lady, aren't you? I can tell. I met her once, when I was a boy, sheltering from a storm in a cave...”",
+    choices: NEXT("joanesHint")
+  },
+  joanesHint: {
+    image: "joanes",
+    text: hint("joanes"),
+    choices: s => JOANES_LEAVING
+  },
+  joanesHat: {
+    image: "joanes",
+    effect: { useItem: "hat", kind: "hat" },
+    text: "Joanes pulls your woolly hat down over his ears. It has a pompom. “Well? How do I look?”\n\nRidiculous. But warm.",
+    choices: [{ label: "Go back down to the forest path", next: "basajaunStart" }, TO_CLEARING]
+  },
+  joanesRevisit: {
+    image: "joanes",
+    text: "Joanes waves from the door of his hut. He's counting his sheep for about the hundredth time.",
+    choices: s => JOANES_LEAVING
+  },
+
+  // ===================== ATARRABI (main quest: steadiness) =====================
+  atarrabiPath: {
+    image: "bridge",
+    effect: { found: "river" },
+    text: "The path to the hermitage hill crosses a river. An old stone bridge arches over the black water — so old that nobody remembers who built it.",
+    choices: [
+      { label: "Cross the bridge and climb the hill", next: s => s.quests.atarrabi === "resolved" ? "atarrabiRevisit" : "atarrabiHill" },
+      { label: "Follow the riverbank — you thought you heard someone crying", when: s => !s.kind.comb, next: "riverBank" },
+      { label: "Walk along the riverbank", when: s => s.kind.comb, next: "laminaRevisit" },
+      TO_CLEARING
+    ]
+  },
+  atarrabiHill: {
+    image: "hermitage",
+    text: "On top of the hill stands a tiny hermitage, an ermita, with a bell hanging in a little stone arch. A young man is pulling the bell rope — slowly, steadily — and the bell rings out over the valley. Hailstones bounce off the roof all around him. There's something odd about him, but you can't work out what.",
+    choices: [
+      { label: "Watch him for a moment", when: s => !s.flags.sawShadow, next: "atarrabiShadow" },
+      { label: "Call out to him", next: "atarrabiMeet" },
+      { label: "Creep back down the hill", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+    ]
+  },
+  atarrabiShadow: {
+    image: "hermitage",
+    effect: { flag: "sawShadow" },
+    text: "Then you see it. The lantern by the door throws your shadow long and black across the snow. But the young man, standing right next to the lantern, has no shadow at all.",
+    choices: [
+      { label: "Call out to him", next: "atarrabiMeet" },
+      { label: "Creep back down the hill", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+    ]
+  },
+  atarrabiMeet: {
+    image: "atarrabi",
+    text: "He turns, still pulling the rope. “A visitor! On a night like this.” His smile is tired. “I'm Atarrabi. My brother Mikelats is up in the clouds, throwing hail at the farms. While the bell rings, the hail can't fall on them. But I've been ringing since sunset, and my arms...”",
+    choices: [
+      { label: "Offer to ring the bell for him", next: "bell1" },
+      { label: "Ask him why he has no shadow", when: s => s.flags.sawShadow && !s.lore.includes("atarrabi"), next: "atarrabiShadowTalk" },
+      { label: "Say you can't stay", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+    ]
+  },
+  // Atarrabi's real legend involves a devil's school — too dark to tell here. This keeps it oblique.
+  atarrabiShadowTalk: {
+    image: "atarrabi",
+    effect: { lore: "atarrabi" },
+    text: "He laughs softly. “You noticed. When my brother and I were young, we had a teacher who lived deep in a cave — a teacher who always kept one of his pupils for himself. I made sure it wasn't Mikelats. I got away in the end... but my shadow stayed behind.”",
+    choices: [
+      { label: "Offer to ring the bell for him", next: "bell1" },
+      { label: "Say you can't stay", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+    ]
+  },
+  bell1: {
+    image: "hermitage",
+    text: "You take the rope. It's heavier than it looks! You pull — DONG — and the bell swings. Atarrabi watches you. “Not too fast, not too slow. Like a heartbeat.”",
+    choices: [
+      { label: "Ring it slow and steady", next: "bell2" },
+      { label: "Ring it as fast as you can", next: "bellFast" }
+    ]
+  },
+  bellFast: {
+    image: "hermitage",
+    text: "DONG-DONG-DONG-DONG — your arms burn and the rhythm falls to pieces. Atarrabi puts a hand on the rope. “Steady. The hail is patient. We have to be more patient.”",
+    choices: [{ label: "Ring it slow and steady", next: "bell2" }]
+  },
+  bell2: {
+    image: "hermitage",
+    text: "DONG... DONG... DONG. Atarrabi nods. “I'm going up to talk to my brother. Keep it ringing until I come back. Whatever happens.” And he walks up into the swirling snow and disappears.",
+    choices: NEXT("bell3")
+  },
+  bell3: {
+    image: "mikelats",
+    effect: { flag: "metMikelats", lore: "mikelats" },
+    text: s => "You ring. And ring. The cold creeps into your fingers. Hail rattles on the roof. Then a voice beside you, sly and friendly: “Why bother? Let go. Nobody would ever know.”\n\n" +
+      (s.flags.mikelatsCross ? "It's Mikelats again, grinning, his long shadow twitching on the snow." : "It's a young man with a crooked grin. He looks a lot like Atarrabi — but he has a shadow: a long, dark, restless one that twitches on the snow."),
+    choices: [
+      { label: "Keep ringing", next: "bell4" },
+      { label: "Let go of the rope, just for a second", next: "bellLetGo" },
+      { label: "“Who are you?”", when: s => !s.flags.mikelatsCross, next: "bellWho" }
+    ]
+  },
+  bellWho: {
+    image: "mikelats",
+    text: "“Me? I'm Mikelats. Atarrabi's brother. The fun one.” His shadow does a little dance on the snow all by itself. “Go on. Let go. Just to see what happens.”",
+    choices: [
+      { label: "Keep ringing", next: "bell4" },
+      { label: "Let go of the rope, just for a second", next: "bellLetGo" }
+    ]
+  },
+  bellLetGo: {
+    image: "hermitage",
+    text: "The bell falls silent. At once, the hail gets thicker and louder and starts to roar down towards the farms in the valley — you can hear it! You grab the rope again. DONG! The roar dies away. Mikelats sighs. “Oh, you're no fun.”",
+    choices: [{ label: "Keep ringing", next: "bell4" }]
+  },
+  bell4: {
+    image: "hermitage",
+    text: "Mikelats shrugs and vanishes into the snow. Not long after, Atarrabi comes down the hill, and the hail stops. The clouds tear open: stars. “My brother has gone off to sulk,” he says, rubbing his arms. “You kept the bell going. The farms are safe — your grandparents' too.”",
+    choices: NEXT("atarrabiHint")
+  },
+  atarrabiHint: {
+    image: "atarrabi",
+    effect: { resolve: "atarrabi", learn: true, lore: "atarrabi" },
+    text: s => "“Mari Domingi sent you? Then you're trying to reach my mother — the Lady of the mountains. Listen.”\n\n" + hint("atarrabi")(s),
+    choices: [
+      { label: "Go down to the river", next: "atarrabiPath" },
+      TO_CLEARING
     ]
   },
   atarrabiDeclined: {
-    image: "empty",
-    text: "(placeholder) You leave without asking. Maybe another time.",
-    choices: [{ label: "Back to the clearing", next: "map" }]
-  },
-  atarrabiHelped: {
-    image: "fireside",
-    text: "(placeholder) Atarrabi nods and shares what he knows before you go.",
-    choices: [{ label: "Jarraitu", next: "map" }]
+    image: "bridge",
+    text: "You slip away down the hill. Behind you, the bell keeps ringing — slower, and slower.",
+    choices: [TO_CLEARING]
   },
   atarrabiRevisit: {
     image: "atarrabi",
-    text: "(placeholder) Atarrabi greets you warmly. \u201cYou already know what I told you,\u201d he says.",
-    choices: [{ label: "Back to the clearing", next: "map" }]
+    text: "Atarrabi waves from the door of the hermitage. The bell is quiet, and the sky over the hill is full of stars.",
+    choices: [{ label: "Go back down to the bridge", next: "atarrabiPath" }, TO_CLEARING]
   },
 
-  sorginakEncounter: {
-    image: "sorginak",
-    text: "(placeholder) The sorginak turn as you approach. \u201cWhat do you want?\u201d one of them asks.",
+  // ===================== THE LAMIÑA (side: the golden comb, and honesty) =====================
+  riverBank: {
+    image: "lamina",
+    text: "You follow the riverbank. Under a willow, a woman with very long hair is searching through the snow at the water's edge, crying softly. Her feet, you notice, are webbed like a duck's.",
     choices: [
-      { label: "(placeholder) Back away, unsure", next: "sorginakDeclined" },
-      { label: "(placeholder) Speak with them", next: "sorginakHelped", effect: { points: 5, resolve: "sorginak" } }
+      { label: "Ask her what's wrong", next: "laminaMeet" },
+      { label: "Back away quietly", next: "atarrabiPath" }
     ]
   },
-  sorginakDeclined: {
-    image: "empty",
-    text: "(placeholder) You back away. Maybe another time.",
-    choices: [{ label: "Back to the clearing", next: "map" }]
+  laminaMeet: {
+    image: "lamina",
+    effect: { lore: "lamiak" },
+    text: "“My comb,” she sobs. “My golden comb! The wind snatched it right out of my hand.” She's a lamiña — one of the river women. Everybody knows a lamiña's golden comb is her greatest treasure.",
+    choices: [
+      { label: "Help her look for it", next: "laminaSearch" },
+      { label: "Say you're sorry, and go", next: "atarrabiPath" }
+    ]
   },
-  sorginakHelped: {
-    image: "fireside",
-    text: "(placeholder) They share what they know before returning to their fire.",
-    choices: [{ label: "Jarraitu", next: "map" }]
+  laminaSearch: {
+    image: "bridge",
+    text: "You search along the bank, poking in the snow. Something glints at the foot of the old bridge: a comb, heavy and golden, strangely warm in your hand.",
+    choices: [
+      { label: "Give it back to her", next: "laminaReturn" },
+      { label: "Keep it — it's real gold!", next: "laminaKeep" }
+    ]
+  },
+  laminaKeep: {
+    image: "lamina",
+    text: "You slip the comb into your pocket. At once the river goes very quiet. The lamiña stops crying and slowly turns her head towards you. “Child,” she says softly. “What's in your pocket?”",
+    choices: [
+      { label: "Give the comb back", next: "laminaReturn" },
+      { label: "“Nothing.”", next: "laminaLie" }
+    ]
+  },
+  laminaLie: {
+    image: "lamina",
+    text: "“A lamiña always knows where her comb is,” she whispers. The water rises over the toes of your boots, icy cold, and keeps rising.",
+    choices: [{ label: "Give the comb back — quickly!", next: "laminaReturn" }]
+  },
+  laminaReturn: {
+    image: "lamina",
+    effect: { kind: "comb", learn: true },
+    text: s => "She takes the comb and holds it against her heart. “Thank you. Lamiak never forget a kindness — we've built whole bridges in one night for people who were good to us.” She runs the comb through her hair, and smiles. “And I know something that the Lady's visitors need to know.”\n\n" + hint("lamina")(s),
+    choices: [{ label: "Go back to the bridge", next: "atarrabiPath" }, TO_CLEARING]
+  },
+  laminaRevisit: {
+    image: "lamina",
+    text: "The lamiña is sitting on a rock in the middle of the river, combing her hair with her golden comb. She waves a webbed foot at you.",
+    choices: [{ label: "Go back to the bridge", next: "atarrabiPath" }, TO_CLEARING]
+  },
+
+  // ===================== THE SORGINAK (main quest: courage and honesty) =====================
+  sorginakPath: {
+    image: "mill",
+    effect: { found: "mill" },
+    text: "The path climbs through fields towards a meadow high on the hillside. On the way you pass an old stone mill beside the stream. From inside comes a strange, tiny chattering, like a hundred mice all talking at once.",
+    choices: [
+      { label: "Keep going up to the meadow", next: s => s.quests.sorginak === "resolved" ? "sorginakRevisit" : "sorginakMeadow" },
+      { label: "Peek inside the mill", next: s => (s.kind.galtza || s.flags.galtzaShut) ? "millRevisit" : "millDoor" },
+      TO_CLEARING
+    ]
+  },
+  sorginakMeadow: {
+    image: "sorginak",
+    text: "In the middle of the meadow a big fire is burning, and around it move shapes — women in shawls, laughing and talking. Sorginak. You've heard stories about the sorginak. Scary ones.",
+    choices: s => SORGINAK_APPROACH
+  },
+  sorginakHide: {
+    image: "sorginak",
+    text: "You crouch behind a tree. Without even turning round, one of the sorginak calls out: “We can see you, little one! Your nose is as red as a berry. Come and get warm.”",
+    choices: s => SORGINAK_APPROACH.slice(1)
+  },
+  sorginakFlower: {
+    image: "sorginak",
+    effect: { lore: "eguzkilore" },
+    text: "As you step closer, the sorginak stop laughing and back away. “The sun-flower,” one of them hisses. “It's in your pocket. We can't come near while you carry it.”\n\nThe eguzkilore! People hang it on their doors so that sorginak and lamiak have to stop and count every one of its spiky petals — and the sun rises before they finish.",
+    choices: [
+      { label: "Leave the eguzkilore at the edge of the meadow", next: "sorginakApproach", effect: { useItem: "eguzkilore", flag: "flowerLeft" } },
+      { label: "Keep it — you might need protecting", next: "sorginakFlowerKeep" }
+    ]
+  },
+  sorginakFlowerKeep: {
+    image: "sorginak",
+    text: "The sorginak stay on the far side of the fire, muttering and keeping their distance. From out here, you can't really talk to anyone.",
+    choices: [
+      { label: "Leave the eguzkilore at the edge of the meadow", next: "sorginakApproach", effect: { useItem: "eguzkilore", flag: "flowerLeft" } },
+      { label: "Run back down the hill", next: "sorginakDeclined", effect: { decline: "sorginak" } }
+    ]
+  },
+  sorginakApproach: {
+    image: "sorginakFire",
+    text: "The fire is warm. Up close, the sorginak are... just women. Old ones and young ones, with rosy cheeks and sharp eyes, stirring a pot that smells of herbs. The oldest looks you up and down. “Well, then. What do they say about us, down in the villages?”",
+    choices: [
+      { label: "“Nothing! Nothing bad.”", next: "sorginakFib" },
+      { label: "“That you serve the Lady of the mountains.”", next: "sorginakServe" },
+      { label: "“That you're wicked witches who eat children.”", next: "sorginakTruth" }
+    ]
+  },
+  sorginakFib: {
+    image: "sorginakFire",
+    text: "The oldest one raises an eyebrow. “Hm. Our Lady can't abide a lie, child, and neither can we. Try again.”",
+    choices: [
+      { label: "“That you serve the Lady of the mountains.”", next: "sorginakServe" },
+      { label: "“That you're wicked witches who eat children.”", next: "sorginakTruth" }
+    ]
+  },
+  sorginakServe: {
+    image: "sorginakFire",
+    text: "“Ha! Somebody's been listening to the right people.” But she can see the fear in your face. “And what else do they say?”",
+    choices: [{ label: "“...That you're wicked witches who eat children.”", next: "sorginakTruth" }]
+  },
+  sorginakTruth: {
+    image: "sorginakFire",
+    effect: { lore: "sorginak" },
+    text: "They all laugh — but not unkindly. “Ah, the old stories. We are the Lady's household, child. We fetch and carry, and keep her fires, and keep her secrets. But long ago, people used our name to blame ordinary women — neighbours, grandmothers — for every storm and every sick cow. That wasn't us. That was fear.”",
+    choices: [
+      { label: "Say you're sorry people tell such stories", next: "sorginakDance" },
+      { label: "Ask if they can help with Olentzero's fire", next: "sorginakDance" }
+    ]
+  },
+  sorginakDance: {
+    image: "sorginakFire",
+    text: "“Help? That's for the Lady to decide. But you walked into our firelight even though you were frightened — and that's the bravest kind of brave.” The oldest one claps her hands. “Now. Nobody leaves our fire without dancing!”",
+    choices: [
+      { label: "Dance!", next: "sorginakHint" },
+      { label: "Clap along instead", next: "sorginakHint" }
+    ]
+  },
+  sorginakHint: {
+    image: "sorginakFire",
+    effect: s => ({ resolve: "sorginak", learn: true, item: s.flags.flowerLeft ? "eguzkilore" : undefined }),
+    text: s => "Round and round the fire, sparks flying up into the snow, until you're dizzy and warm right through. When you finally stop, the oldest one bends down and whispers in your ear:\n\n" + hint("sorginak")(s) +
+      (s.flags.flowerLeft ? "\n\nOn your way out, you pick up your eguzkilore from the edge of the meadow." : ""),
+    choices: [{ label: "Go back down past the mill", next: "sorginakPath" }, TO_CLEARING]
+  },
+  sorginakDeclined: {
+    image: "sorginak",
+    text: "You hurry back down the hill. Behind you there's laughter — but whether it's at you or at some joke of their own, you can't tell.",
+    choices: [TO_CLEARING]
   },
   sorginakRevisit: {
-    image: "sorginak",
-    text: "(placeholder) The sorginak nod to you. \u201cWe already spoke,\u201d they say.",
-    choices: [{ label: "Back to the clearing", next: "map" }]
+    image: "sorginakFire",
+    text: "The sorginak wave from their fire. “Come back any time, little brave one!”",
+    choices: [{ label: "Go back down past the mill", next: "sorginakPath" }, TO_CLEARING]
+  },
+
+  // ===================== THE GALTZAGORRIAK (side: keep them busy — usefully) =====================
+  millDoor: {
+    image: "galtzagorriak",
+    effect: { lore: "galtzagorriak" },
+    text: "You push open the mill door. The millstone is still. On the miller's table sits an open needle case — and pouring out of it are tiny little men in bright red trousers, dozens and dozens of them, swarming up your boots and shouting: “Zer egin? Zer egin? What shall we do? What shall we do?”",
+    choices: s => GALTZA_JOBS
+  },
+  galtzaTidy: {
+    image: "galtzagorriak",
+    effect: { flag: "galtzaTidy" },
+    text: "In the blink of an eye, the whole mill is swept, every sack is stacked and every cobweb is gone. “Done! Done! What next? What next?” They're getting impatient — some of them have started untying your bootlaces.",
+    choices: s => GALTZA_JOBS
+  },
+  galtzaWood: {
+    image: "galtzagorriak",
+    effect: { kind: "galtza", flag: "galtzaWood" },
+    text: "“Firewood! Firewood!” They pour out of the door like a little red river and are gone. Far off, towards the clearing, you hear a great deal of very fast chopping.",
+    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+  },
+  galtzaRoad: {
+    image: "galtzagorriak",
+    effect: { kind: "galtza", flag: "galtzaRoad" },
+    text: "“The road! The road!” They stream out of the door and away down the valley. By morning, every snowdrift between the baserri and the village will be gone, and nobody will ever know how.",
+    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+  },
+  galtzaShut: {
+    image: "galtzagorriak",
+    effect: { flag: "galtzaShut" },
+    text: "You scoop up as many as you can and snap the lid shut on them. But three escape — and tie your bootlaces together. By the time you've untangled yourself, they've vanished.",
+    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+  },
+  millRevisit: {
+    image: "mill",
+    text: "The mill is quiet now. The needle case sits closed on the table. From inside it comes a very small voice: “Zer egin?”",
+    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+  },
+
+  // ===================== MIKELATS (side: the shortcut that goes nowhere) =====================
+  // Turns up at the crossroads once the child has finished one main quest, unless already met.
+  mikelatsMeet: {
+    image: "mikelats",
+    effect: { flag: "mikelatsCross", lore: "mikelats" },
+    text: "A young man is leaning on a fence where the paths cross, grinning. His shadow is long and restless. “All this walking about! Let me guess — you're trying to get to my mother. I can take you straight to her. No more silly favours for silly forest folk.”",
+    choices: [
+      { label: "Follow him", next: "mikelatsFollow", effect: { flag: "followedMikelats" } },
+      { label: "Ask who his mother is", next: "mikelatsWho" },
+      { label: "“No, thank you.”", next: "mikelatsRefuse" }
+    ]
+  },
+  mikelatsWho: {
+    image: "mikelats",
+    text: "“The Lady of the mountains, of course! Mari. I'm Mikelats, her favourite son.” As he says it, his shadow gives a little shrug, as if it didn't quite believe him.",
+    choices: [
+      { label: "Follow him", next: "mikelatsFollow", effect: { flag: "followedMikelats" } },
+      { label: "“No, thank you.”", next: "mikelatsRefuse" }
+    ]
+  },
+  mikelatsFollow: {
+    image: "forestDay",
+    text: "He leads you down one path and up another, round a big rock, through a gap in a wall and across a frozen field, talking the whole time. Then he stops, bursts out laughing — and he's gone.\n\nYou look around. You're standing in the clearing, right in front of Mari Domingi's little fire.",
+    choices: [{ label: "Oh.", next: "map" }]
+  },
+  mikelatsRefuse: {
+    image: "mikelats",
+    text: "“Suit yourself,” he shrugs. “Do it the slow way, then. Like my boring brother.” And he's gone in a gust of snow.",
+    choices: [TO_CLEARING]
+  },
+
+  // ===================== MARI'S MOUNTAINS =====================
+  // Each peak has its own short climb, so trying again after a mistake is a real journey.
+  anbotoClimb: {
+    image: "anboto",
+    text: "The path up Anboto is steep and rocky. The summit is wrapped in a cloud — the old people say that means the Lady is at home.",
+    choices: [
+      { label: "Keep climbing", next: "peakDoor" },
+      { label: "Stop and look back down at the valley", next: "anbotoView" }
+    ]
+  },
+  anbotoView: {
+    image: "anboto",
+    text: "Far below, tiny lights: the villages, the farms — and somewhere down there, your grandparents' baserri. You take a deep breath of the freezing air and turn back to the mountain.",
+    choices: [{ label: "Keep climbing", next: "peakDoor" }]
+  },
+  txindokiClimb: {
+    image: "txindoki",
+    text: "Txindoki rises out of the snow like a sharp tooth. The Lady's fire disappeared somewhere near the top.",
+    choices: [
+      { label: "Take the windy ridge", next: "txindokiRidge" },
+      { label: "Take the path through the beech wood", next: "txindokiWood" }
+    ]
+  },
+  txindokiRidge: {
+    image: "txindoki",
+    text: "The wind on the ridge nearly knocks you flat. You crouch low and keep going, one handhold at a time, until a dark cave mouth opens in the rock above you.",
+    choices: [{ label: "Climb up to the cave", next: "peakDoor" }]
+  },
+  txindokiWood: {
+    image: "txindoki",
+    text: "Among the grey beech trunks it's quieter. Far off, a long howl rolls across the mountains — Basajaun, warning the shepherds of something. The path brings you out right below a dark cave mouth.",
+    choices: [{ label: "Climb up to the cave", next: "peakDoor" }]
+  },
+  aizkorriClimb: {
+    image: "aizkorri",
+    text: "Aizkorri is long and high, and the snow is deep. Near the top, in a hollow among the rocks, a cave mouth is glowing faintly.",
+    choices: [
+      { label: "Climb straight up to the glow", next: "peakDoor" },
+      { label: "Call out her name first", next: "aizkorriCall" }
+    ]
+  },
+  aizkorriCall: {
+    image: "aizkorri",
+    text: "“Mari!” Your voice echoes back three times. The glow in the cave gets brighter, as if somebody inside had heard.",
+    choices: [{ label: "Climb up to the cave", next: "peakDoor" }]
+  },
+  peakDoor: {
+    image: "caveMouth",
+    text: s => "You stand at the mouth of the Lady's cave. A warm glow comes from somewhere deep inside. Before you go in, you go over everything you know:\n\n" +
+      (knownFacts(s) || "...nothing at all.") +
+      (s.facts.length < FACT_ORDER.length ? "\n\nThere's something you still don't know about how to behave in front of her. Maybe someone out there could tell you." : ""),
+    choices: [
+      { label: "Go in", next: "mariCave1" },
+      { label: "Go back down to the clearing", next: "map" }
+    ]
+  },
+
+  // ===================== MARI'S CAVE (the final test) =====================
+  // noBack: the back button and map are off in here, so a wrong choice can't simply be undone.
+  // The journal still works — looking things up is allowed.
+  // Mari speaks to the child with hika; in English that's shown as "thou/thee". The greeting
+  // choices are the test of hika: one must be hika, the others zuka. TRANSLATOR: the [hi]/[zu]
+  // tags are only reminders — in Basque, the verb forms themselves should give it away.
+  mariCave1: {
+    image: "mariCave",
+    noBack: true, clearHistory: true,
+    text: "Just inside the cave, on a rock, sits a woman with long golden hair, combing it slowly with a golden comb. The whole cave glows around her as if the rock itself were warm. She doesn't look surprised to see you.\n\n“Who climbs to my door on Christmas Eve?”",
+    choices: s => MARI_GREETINGS
+  },
+  mariBow: {
+    image: "mariCave",
+    noBack: true,
+    text: "You bow, and wait. The silence goes on and on. At last she says: “Hast thou no tongue, child?”",
+    choices: s => MARI_GREETINGS.slice(0, 2)
+  },
+  mariCave2: {
+    image: "mariCave",
+    noBack: true,
+    text: "Mari puts down her comb and looks at you for a long time. Then she points to a flat stone beside the fire. “Sit, child. Thou hast climbed a long way.”",
+    choices: [
+      { label: "Sit down gratefully", next: "mariFailSit", effect: { mariFail: true, learnFact: "noSit" } },
+      { label: "Thank her, but stay standing", next: "mariCave3" },
+      { label: "Hold your frozen hands out to the fire, still standing", next: "mariCave3" }
+    ]
+  },
+  mariCave3: {
+    image: "mariCave",
+    noBack: true,
+    text: s => "She nods, and something in her face softens. Then her eyes sharpen again.\n\n" + honesty(s).question,
+    choices: s => [
+      { label: honesty(s).lie, next: "mariCave3Lie" },
+      { label: honesty(s).truth, next: "mariCave3Truth" }
+    ]
+  },
+  // Honesty gets as many tries as it takes — the lesson is the point, not the failure.
+  mariCave3Lie: {
+    image: "mariCave",
+    noBack: true,
+    text: "The fire in the cave sinks low and blue. Mari says nothing at all. She only looks at you — and the silence is worse than any shouting.\n\n“I cannot abide a lie, child. Nor a boast. Think again.”",
+    choices: s => [
+      { label: honesty(s).lie, next: "mariCave3Lie" },
+      { label: honesty(s).truth, next: "mariCave3Truth" }
+    ]
+  },
+  mariCave3Truth: {
+    image: "mariCave",
+    noBack: true,
+    text: s => "The fire brightens again. " + honesty(s).answer + "\n\n“Now. Tell me why thou hast come.”",
+    choices: NEXT("mariCave4")
+  },
+  mariCave4: {
+    image: "mariCave",
+    noBack: true,
+    text: "You tell her everything: the storm, Olentzero's fire, Mari Domingi, the long night. When you've finished, Mari stands, walks to the mouth of the cave, and calls one word out into the storm.\n\nThe whole mountain trembles.",
+    choices: NEXT("mariSugaar1")
+  },
+  mariSugaar1: {
+    image: "sugaar",
+    noBack: true,
+    effect: { lore: "sugaar" },
+    text: "Something enormous comes down out of the clouds: a serpent made of fire and storm, coiling around the rocks at the cave mouth. The snow hisses into steam wherever he touches it. Sugaar.\n\nHe doesn't look at you. “Why hast thou called me, Mari?”",
+    choices: NEXT("mariSugaar2")
+  },
+  mariSugaar2: {
+    image: "sugaar",
+    noBack: true,
+    text: "“Olentzero's fire has gone out,” says Mari.\n\nSugaar's voice is like thunder far away. “The fires of men are nothing to me.”\n\n“This child,” says Mari, “climbed my mountain on Christmas Eve, spoke to me as one should, and told me the truth. Wilt thou refuse?”\n\nFor the first time, Sugaar turns his burning eyes on you. You make yourself not look away.\n\n“Once,” he says.",
+    choices: NEXT("mariDismiss")
+  },
+  mariDismiss: {
+    image: "mariCave",
+    noBack: true,
+    text: "Mari turns back to you. “Go now, {name}. When thou art gone, Sugaar will fly.”",
+    choices: [
+      { label: "Turn and run outside to watch", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } },
+      { label: "Walk out backwards, step by step, facing her", next: "endOutside" },
+      { label: "Bow, then turn and walk out calmly", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } }
+    ]
+  },
+  // Getting a rule wrong: Mari flies to her next mountain (peak has already moved on here),
+  // and the child now knows the rule they broke.
+  mariFailHika: {
+    image: "caveDark",
+    noBack: true, clearHistory: true,
+    text: s => `Mari's eyes flash. “Zu? Am I a stranger, to be spoken to like that at my own door?”\n\nA blast of wind roars out of the cave and knocks you off your feet. When you sit up, the cave is dark and empty — and high above, a ball of fire is streaking across the sky towards ${peak(s).name}.\n\nNow you know: Mari must be spoken to with “hi”, like family.`,
+    choices: [{ label: "Go back down to the clearing", next: "map" }]
+  },
+  mariFailSit: {
+    image: "caveDark",
+    noBack: true, clearHistory: true,
+    text: s => `The moment you sit down, the stone turns as cold as ice and the fire goes out. In the dark, her voice: “In my house, nobody sits before me.”\n\nWhen your eyes get used to the dark, the cave is empty. High above, her fire is flying away towards ${peak(s).name}.\n\nNow you know: nobody sits down in front of Mari.`,
+    choices: [{ label: "Go back down to the clearing", next: "map" }]
+  },
+  mariFailBack: {
+    image: "caveDark",
+    noBack: true, clearHistory: true,
+    text: s => `As you turn, a blast of wind slams into your back. When you look round, the cave is dark and empty, and Sugaar is gone too. High above, two fires are streaking across the sky towards ${peak(s).name}.\n\nNow you know: you must never turn your back on Mari.`,
+    choices: [{ label: "Go back down to the clearing", next: "map" }]
+  },
+
+  // ===================== ENDING =====================
+  endOutside: {
+    image: "caveMouth",
+    noBack: true, clearHistory: true,
+    text: "One careful step after another, you walk backwards out of the cave, never taking your eyes off the Lady, until the cold mountain air is all around you. The glow inside the cave fades.\n\nThen the mountain shakes.",
+    choices: NEXT("endSugaar")
+  },
+  endSugaar: {
+    image: "skyFire",
+    noBack: true,
+    text: "Sugaar bursts out of the peak above you — a great serpent of fire with scales like glowing embers — and pours himself across the sky towards the valley, lighting up the snow for miles.",
+    choices: NEXT("endLightning")
+  },
+  endLightning: {
+    image: "skyFire",
+    noBack: true,
+    text: "Far below, at the edge of the forest, a bolt of fire strikes a little chimney. A window that was dark begins to glow, warm and gold.",
+    choices: NEXT("endGabonGaua")
+  },
+  endGabonGaua: {
+    type: "interstitial",
+    text: "Gabon gaua",
+    next: "endOlentzero",
+    hold: 2400
+  },
+  endOlentzero: {
+    image: "olentzero",
+    noBack: true,
+    text: "Mari Domingi brings you to a cabin deep in the woods, full of sacks and parcels and the smell of charcoal. A fire roars in the hearth. A big man with a sooty face, a pipe and a txapela turns round — Olentzero.\n\n“So you're {name},” he says. “Mari Domingi told me everything.”",
+    choices: [
+      { label: "Ask how many presents there are", next: "endPresents" },
+      { label: "Ask if you can help", next: "endHelp" },
+      { label: "Say goodbye", next: "endBye" }
+    ]
+  },
+  endPresents: {
+    image: "olentzero",
+    noBack: true,
+    text: "“How many?” Olentzero scratches his beard and leaves a black smudge. “One for every child in every village from here to the sea. And not one of them would be ready without that fire.”",
+    choices: [
+      { label: "Ask if you can help", next: "endHelp" },
+      { label: "Say goodbye", next: "endBye" }
+    ]
+  },
+  endHelp: {
+    image: "olentzero",
+    noBack: true,
+    text: "He laughs and hands you a ball of string. For a while you tie up parcels side by side while Mari Domingi bosses you both about. Your knots are terrible. Nobody minds.",
+    choices: [{ label: "Say goodbye", next: "endBye" }]
+  },
+  endBye: {
+    image: "olentzero",
+    noBack: true,
+    text: "“Eskerrik asko, {name}. Now, home with you — before your aitona notices you're missing!”",
+    choices: NEXT("endHome")
+  },
+  endHome: {
+    image: "baserriNight",
+    noBack: true,
+    text: s => "Mari Domingi walks you to the edge of the trees. The windows of the baserri are glowing. Inside, the Gabon-subila is burning in the hearth" +
+      (s.kind.log ? " — the very log you helped aitona drag through the snow" : "") +
+      ". Nobody seems to have noticed how long you were gone.",
+    choices: NEXT("endMorning")
+  },
+  endMorning: {
+    image: "baserriNight",
+    noBack: true,
+    text: "You fall asleep to the crackle of the log. And in the morning, beside the hearth, there's a little parcel with your name on it, tied with very bad knots.\n\n(What's inside — still to decide.)",
+    choices: NEXT("endCard")
+  },
+  endCard: {
+    type: "interstitial",
+    text: "Amaiera",
+    next: "endFinal",
+    hold: 2400
+  },
+  endFinal: {
+    image: "ending",
+    noBack: true,
+    text: "Thank you for playing.",
+    choices: [
+      { label: "Read about the story", next: "aboutScreen" },
+      { label: "Menura itzuli", next: "menu" }
+    ]
   }
 };
+
+// ---------- SHARED CHOICE LISTS ----------
+const MD_QUESTIONS = [
+  { label: "“Can't we just light it again with matches?”", when: s => !s.flags.mdMatches, next: "mdMatches" },
+  { label: "“Who are you?”", when: s => !s.flags.mdWho, next: "mdWho" },
+  { label: "“Why me?”", when: s => !s.flags.mdWhy, next: "mdWhy" },
+  { label: "“What do I have to do?”", when: s => !s.flags.mdPlan, next: "mdPlan" },
+  { label: "Set off", when: s => s.flags.mdPlan, next: "clearingFirst" }
+];
+
+// The clearing. `done` dims a place once its business is finished (it can still be visited).
+const LOCATIONS = [
+  { label: s => `The Lady's cave on ${peak(s).name}`, when: s => s.mari.revealed, next: s => peak(s).id + "Climb" },
+  { label: "The path into the deep forest", next: "basajaunStart", done: s => s.quests.basajaun === "resolved" },
+  { label: "The hill with the little hermitage", next: "atarrabiPath", done: s => s.quests.atarrabi === "resolved" },
+  { label: "The firelight in the high meadow", next: "sorginakPath", done: s => s.quests.sorginak === "resolved" },
+  { label: "The shepherd's hut on the high pasture", when: s => s.found.hut, next: "hutPath", done: s => s.kind.lambs },
+  { label: "The riverbank by the old bridge", when: s => s.found.river, next: s => s.kind.comb ? "laminaRevisit" : "riverBank", done: s => s.kind.comb },
+  { label: "The old mill", when: s => s.found.mill, next: s => (s.kind.galtza || s.flags.galtzaShut) ? "millRevisit" : "millDoor", done: s => s.kind.galtza },
+  { label: "A stranger waiting at the crossroads", when: s => mainDone(s) >= 1 && !s.flags.metMikelats && !s.flags.mikelatsCross && !s.mari.revealed, next: "mikelatsMeet" },
+  { label: "Talk to Mari Domingi", next: "mdHub" }
+];
+
+const BASAJAUN_FIRE_CHOICES = [
+  { label: "Ask him straight away about Olentzero's fire", next: "basajaunTooSoon" },
+  { label: "Wait quietly, and listen to the forest", next: "basajaunWait" },
+  { label: "Offer him the bread Joanes gave you", when: s => s.items.bread, next: "basajaunBread", effect: { useItem: "bread" } },
+  { label: "Offer him your bag of sweets", when: s => s.items.sweets, next: "basajaunSweets", effect: { useItem: "sweets" } },
+  { label: "Get up and leave", next: "basajaunLeave", effect: { decline: "basajaun" } }
+];
+
+const JOANES_LEAVING = [
+  { label: "Give him your woolly hat", when: s => s.items.hat, next: "joanesHat" },
+  { label: "Go back down to the forest path", next: "basajaunStart" },
+  TO_CLEARING
+];
+
+const SORGINAK_APPROACH = [
+  { label: "Hide behind a tree and watch", next: "sorginakHide" },
+  { label: "Walk into the firelight", next: s => s.items.eguzkilore ? "sorginakFlower" : "sorginakApproach" },
+  { label: "Run back down the hill", next: "sorginakDeclined", effect: { decline: "sorginak" } }
+];
+
+const GALTZA_JOBS = [
+  { label: "“Tidy up the mill!”", when: s => !s.flags.galtzaTidy, next: "galtzaTidy" },
+  { label: "“Take firewood to Mari Domingi in the clearing!”", next: "galtzaWood" },
+  { label: "“Clear all the snow off the road to the village!”", next: "galtzaRoad" },
+  { label: "Try to shut them back in the needle case", next: "galtzaShut" }
+];
+
+const MARI_GREETINGS = [
+  { label: "“Good evening, my lady. I'm sorry to disturb you.” [zu]", next: "mariFailHika", effect: { mariFail: true, learnFact: "hika" } },
+  { label: "“Good evening, Mari. I've come to ask thee for help.” [hi]", next: "mariCave2" },
+  { label: "Bow low and say nothing", next: "mariBow" }
+];
 
 // ---------- SCENES ----------
 // Every scene key (a node's `image`) loads images/<key>.webp. The SVGs below are
 // placeholders, shown only when that file is missing.
 const flickerScenes = new Set(["fireHearth"]);
+
+// Placeholder kit — simple shapes, only until the real images exist.
+const PH = {
+  svg: (bg, inner) => `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><rect width="400" height="300" fill="${bg}"/>${inner}</svg>`,
+  hills: (c = "#0a1310") => `<path d="M0,300 L0,220 L50,150 L100,220 L150,140 L200,220 L250,160 L300,220 L350,150 L400,220 L400,300 Z" fill="${c}"/>`,
+  trees: (c = "#0e1a15") => `<path d="M0,300 L0,190 L40,120 L70,190 L100,110 L140,190 L170,130 L210,190 L240,120 L280,190 L320,140 L360,190 L400,150 L400,300 Z" fill="${c}"/>`,
+  peak: (c = "#1c262c") => `<path d="M0,300 L0,250 L120,200 L200,60 L280,190 L400,240 L400,300 Z" fill="${c}"/>`,
+  figure: (x, c, s = 1) => `<g transform="translate(${x} 270) scale(${s})"><path d="M-20,0 C-30,-70 -25,-120 0,-150 C25,-120 30,-70 20,0 Z" fill="${c}"/><circle cx="0" cy="-166" r="19" fill="${c}"/><circle cx="-7" cy="-170" r="2" fill="#d4a94f"/><circle cx="7" cy="-170" r="2" fill="#d4a94f"/></g>`,
+  fire: (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="16" ry="26" fill="#e08a42"/><ellipse cx="0" cy="5" rx="9" ry="16" fill="#f2c26a"/></g>`,
+  glow: (x, y, r, c = "#e08a42", o = 0.15) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="${o}"/>`,
+  house: (x, y, win = "#e08a42") => `<rect x="${x}" y="${y}" width="100" height="60" fill="#241a12"/><path d="M${x - 10},${y} L${x + 50},${y - 40} L${x + 110},${y} Z" fill="#1a120c"/><rect x="${x + 38}" y="${y + 25}" width="12" height="10" fill="${win}" opacity="0.6"/>`,
+  cave: (c = "#050607") => `<path d="M110,300 L110,200 C110,110 290,110 290,200 L290,300 Z" fill="${c}"/>`,
+  sheep: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="14" ry="9" fill="#cbb98f" opacity="0.8"/><circle cx="${x + 13}" cy="${y - 4}" r="5" fill="#3a3028"/>`
+};
+
 const placeholders = {
+  carRoad: PH.svg("#141d22", PH.trees() + `<path d="M150,300 L195,200 L205,200 L250,300 Z" fill="#1f2a2e"/><circle cx="185" cy="270" r="5" fill="#f2e6cf" opacity="0.7"/><circle cx="215" cy="270" r="5" fill="#f2e6cf" opacity="0.7"/>`),
+  stormNight: PH.svg("#0a1016", PH.hills("#0d1519") + PH.house(150, 200) + `<path d="M40,40 L80,90 M120,20 L160,70 M260,30 L300,80 M330,60 L370,110 M60,120 L100,170" stroke="#cbb98f" stroke-width="2" opacity="0.25"/>`),
+  baserriInside: PH.svg("#1a140f", `<rect x="60" y="60" width="50" height="60" fill="none" stroke="#5a4632" stroke-width="3"/><rect x="140" y="50" width="40" height="50" fill="none" stroke="#5a4632" stroke-width="3"/><path d="M240,300 L240,260 L280,260 L280,220 L320,220 L320,180 L360,180 L360,140 L400,140 L400,300 Z" fill="#2a1f16"/>`),
+  attic: PH.svg("#120f0c", `<path d="M0,120 L200,20 L400,120" stroke="#3a2a1c" stroke-width="10" fill="none"/><rect x="180" y="70" width="40" height="30" fill="#cbb98f" opacity="0.15"/><rect x="60" y="210" width="120" height="70" fill="#2a1f16"/><circle cx="120" cy="245" r="14" fill="none" stroke="#d4a94f" stroke-width="2" opacity="0.4"/>`),
+  eguzkilore: PH.svg("#141210", `<circle cx="200" cy="150" r="30" fill="#5a4632"/>` + Array.from({ length: 24 }, (_, i) => { const a = i * Math.PI / 12; return `<line x1="${200 + Math.cos(a) * 34}" y1="${150 + Math.sin(a) * 34}" x2="${200 + Math.cos(a) * 80}" y2="${150 + Math.sin(a) * 80}" stroke="#cbb98f" stroke-width="3" opacity="0.6"/>`; }).join("")),
+  kitchen: PH.svg("#1c140d", `<rect x="40" y="180" width="160" height="100" fill="#2a1f16"/>` + PH.fire(120, 220, 0.8) + PH.figure(290, "#5a3a2a", 0.9)),
+  aitonaLog: PH.svg("#16241f", PH.hills() + `<rect x="80" y="235" width="180" height="40" rx="20" fill="#3a2a1c"/>` + PH.figure(310, "#3a3028", 0.9)),
+  tracks: PH.svg("#1a2226", Array.from({ length: 5 }, (_, i) => i % 2 ? `<circle cx="${230 - i * 10}" cy="${270 - i * 50}" r="${14 - i * 2}" fill="#0e1418"/>` : `<ellipse cx="${170 - i * 6}" cy="${270 - i * 50}" rx="${10 - i * 1.5}" ry="${22 - i * 3}" fill="#0e1418"/>`).join("")),
+  robin: PH.svg("#16201c", `<path d="M80,260 C140,180 200,240 260,170 M120,280 C180,210 260,250 320,200" stroke="#2a1f16" stroke-width="5" fill="none"/><circle cx="210" cy="200" r="16" fill="#5a4632"/><circle cx="214" cy="206" r="9" fill="#c96a2e"/>`),
+  pasture: PH.svg("#16221c", PH.hills("#0e1a15") + PH.house(60, 200, "#c96a2e") + `<rect x="270" y="190" width="14" height="50" fill="#3a4045"/><rect x="320" y="190" width="14" height="50" fill="#3a4045"/><rect x="260" y="178" width="85" height="14" fill="#3a4045"/>` + PH.sheep(200, 260)),
+  jentilarri: PH.svg("#141c18", PH.hills("#0e1a15") + `<rect x="130" y="160" width="30" height="100" fill="#3a4045"/><rect x="240" y="160" width="30" height="100" fill="#3a4045"/><rect x="110" y="135" width="180" height="30" fill="#4a5055"/>`),
+  joanes: PH.svg("#141c18", PH.hills() + PH.figure(200, "#3a3028") + PH.sheep(90, 260) + PH.sheep(300, 265)),
+  lambs: PH.svg("#18241e", PH.hills("#0e1a15") + PH.sheep(140, 250) + PH.sheep(200, 262) + PH.sheep(260, 250)),
+  bridge: PH.svg("#0f1719", `<rect x="0" y="230" width="400" height="70" fill="#0a1e26"/><path d="M60,230 C60,150 340,150 340,230 L320,230 C320,175 80,175 80,230 Z" fill="#3a4045"/>`),
+  lamina: PH.svg("#0f1719", `<rect x="0" y="230" width="400" height="70" fill="#0a1e26"/>` + PH.figure(200, "#2f4a50") + `<rect x="226" y="140" width="18" height="8" fill="#d4a94f"/>`),
+  hermitage: PH.svg("#11171a", `<path d="M0,300 L0,240 C100,180 300,180 400,240 L400,300 Z" fill="#0d1416"/><rect x="160" y="150" width="80" height="60" fill="#2a2a2a"/><path d="M150,150 L200,115 L250,150 Z" fill="#1f1f1f"/><circle cx="200" cy="135" r="8" fill="#d4a94f" opacity="0.6"/>`),
+  mikelats: PH.svg("#14141a", PH.hills("#0d0d12") + `<ellipse cx="270" cy="275" rx="120" ry="10" fill="#000" opacity="0.6"/>` + PH.figure(190, "#4a2626")),
+  mill: PH.svg("#141a16", `<rect x="0" y="250" width="400" height="50" fill="#0a1e26"/><rect x="130" y="150" width="120" height="100" fill="#2a2420"/><circle cx="270" cy="220" r="40" fill="none" stroke="#3a3028" stroke-width="8"/>`),
+  galtzagorriak: PH.svg("#1a120e", Array.from({ length: 30 }, (_, i) => `<g transform="translate(${30 + (i * 53) % 340} ${150 + (i * 37) % 120})"><rect x="-4" y="0" width="8" height="10" fill="#c0392b"/><circle cx="0" cy="-4" r="4" fill="#e0b080"/></g>`).join("")),
+  sorginakFire: PH.svg("#0d1512", PH.glow(200, 220, 160, "#e08a42", 0.12) + PH.fire(200, 240, 1.4) + PH.figure(110, "#2a2018", 0.7) + PH.figure(290, "#2a2018", 0.7) + PH.figure(200, "#2a2018", 0.5)),
+  fireball: PH.svg("#0a141c", PH.peak("#141c22") + `<path d="M40,200 C120,150 220,110 300,90" stroke="#e08a42" stroke-width="3" fill="none" opacity="0.5"/>` + PH.glow(300, 90, 26, "#f2c26a", 0.35) + `<circle cx="300" cy="90" r="10" fill="#f2c26a"/>`),
+  anboto: PH.svg("#101a22", PH.peak() + `<ellipse cx="200" cy="65" rx="70" ry="22" fill="#cbb98f" opacity="0.18"/>`),
+  txindoki: PH.svg("#121a20", `<path d="M0,300 L0,260 L150,210 L210,40 L250,200 L400,250 L400,300 Z" fill="#1c262c"/>`),
+  aizkorri: PH.svg("#111920", `<path d="M0,300 L0,200 L80,110 L160,95 L240,100 L320,90 L400,140 L400,300 Z" fill="#1c262c"/>` + PH.glow(250, 140, 20, "#e08a42", 0.4)),
+  caveMouth: PH.svg("#0c1012", `<rect width="400" height="300" fill="#1c2226"/>` + PH.cave("#050607") + PH.glow(200, 240, 50, "#e08a42", 0.2)),
+  mariCave: PH.svg("#120d0a", PH.glow(200, 170, 170, "#d4a94f", 0.12) + PH.figure(200, "#6a5020") + `<rect x="222" y="120" width="20" height="8" fill="#f2c26a"/>` + PH.fire(320, 250, 0.7)),
+  sugaar: PH.svg("#0d0a0a", `<path d="M20,80 C120,20 160,180 240,120 C320,60 300,220 380,200" stroke="#e08a42" stroke-width="26" fill="none" stroke-linecap="round"/><path d="M20,80 C120,20 160,180 240,120 C320,60 300,220 380,200" stroke="#f2c26a" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.7"/>`),
+  caveDark: PH.svg("#050607", `<path d="M110,300 L110,200 C110,110 290,110 290,200 L290,300" stroke="#1c2226" stroke-width="4" fill="none"/><circle cx="340" cy="40" r="6" fill="#f2c26a" opacity="0.7"/>`),
+  skyFire: PH.svg("#0a141c", PH.hills("#0d1519") + `<path d="M20,40 C140,0 260,60 330,210" stroke="#e08a42" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.8"/>` + PH.house(280, 220, "#f2c26a")),
+  olentzero: PH.svg("#1c140d", PH.fire(80, 230, 1.2) + PH.figure(220, "#3a2a1c", 1.1) + `<ellipse cx="330" cy="260" rx="40" ry="25" fill="#5a4632"/><ellipse cx="300" cy="275" rx="30" ry="18" fill="#4a3a28"/>`),
+  baserriNight: PH.svg("#0a1016", `<circle cx="80" cy="50" r="1.5" fill="#f2e6cf"/><circle cx="300" cy="40" r="2" fill="#f2e6cf"/><circle cx="350" cy="90" r="1.5" fill="#f2e6cf"/>` + PH.hills("#0d1519") + PH.house(150, 210, "#f2c26a") + PH.glow(194, 240, 30, "#f2c26a", 0.2)),
+  ending: PH.svg("#0a141c", PH.hills("#0e1a15") + PH.glow(200, 230, 40, "#e08a42", 0.3) + `<circle cx="200" cy="230" r="6" fill="#e08a42"/>`),
   coldNight: `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
     <rect width="400" height="300" fill="#0a141c"/>
     <circle cx="200" cy="150" r="55" fill="#0d2230" opacity="0.7"/>
@@ -682,6 +1843,50 @@ function typeText(el, text, onDone) {
   el.onclick = finish;
 }
 
+// ---------- EFFECTS ----------
+// An effect is an object (or a function of state returning one). Choices carry effects that
+// happen when picked; nodes can carry effects that happen on arrival.
+function applyEffect(effect) {
+  const e = val(effect);
+  if (!e) return;
+  const s = state;
+  if ("name" in e) s.name = e.name;
+  if (e.item) s.items[e.item] = true;
+  if (e.useItem) delete s.items[e.useItem];
+  if (e.flag) s.flags[e.flag] = true;
+  if (e.found) s.found[e.found] = true;
+  if (e.lore && !s.lore.includes(e.lore)) s.lore.push(e.lore);
+  if (e.kind) s.kind[e.kind] = true;
+  if (e.resolve) s.quests[e.resolve] = "resolved";
+  if (e.decline) {
+    s.declinedEver[e.decline] = true;
+    if (s.quests[e.decline] !== "resolved") s.quests[e.decline] = "declined";
+  }
+  if (e.learn) {
+    const next = FACT_ORDER.find(f => !s.facts.includes(f));
+    s.lastFact = next || null;
+    if (next) s.facts.push(next);
+  }
+  if (e.learnFact && !s.facts.includes(e.learnFact)) s.facts.push(e.learnFact);
+  if (e.mariFail) { s.mari.fails++; s.mari.peak = (s.mari.peak + 1) % PEAKS.length; }
+  if (e.mariReveal) s.mari.revealed = true;
+}
+
+// Moves the story into a node: applies effects and returns the id actually entered.
+// No rendering here, so the same rules can be tested without clicking through.
+function enterNode(nextId, effect) {
+  applyEffect(effect);
+  if (nextId === "map" && !state.mari.revealed && favour(state) >= FAVOUR_NEEDED) nextId = "mariReveal";
+  const node = story[nextId];
+  if (node) applyEffect(node.effect);
+  if (nextId === "map") state.flags.reachedMap = true;
+  return nextId;
+}
+
+function visibleChoices(node) {
+  return (val(node.choices) || []).filter(c => !c.when || c.when(state));
+}
+
 // ---------- RENDER: STORY NODE ----------
 function renderNode(node) {
   renderScene(node.image);
@@ -695,7 +1900,7 @@ function renderNode(node) {
       listenRow.innerHTML = '<button class="listen-btn" id="listenBtn">🔊 Listen</button>';
       const btn = document.getElementById("listenBtn");
       const play = () => {
-        const utter = new SpeechSynthesisUtterance(interpolate(node.narration));
+        const utter = new SpeechSynthesisUtterance(interpolate(val(node.narration)));
         utter.rate = 0.92;
         utter.onend = () => { btn.classList.remove("playing"); btn.textContent = "🔊 Listen"; };
         window.speechSynthesis.speak(utter);
@@ -723,7 +1928,7 @@ function renderNode(node) {
   const area = document.getElementById("interactiveArea");
   area.innerHTML = "";
 
-  typeText(document.getElementById("storyText"), interpolate(node.text), () => {
+  typeText(document.getElementById("storyText"), interpolate(val(node.text)), () => {
     showInteractive(node, area);
   });
 }
@@ -743,27 +1948,37 @@ function showInteractive(node, area) {
     row.innerHTML = `<input class="name-input" id="nameField" placeholder="Your name" enterkeyhint="go" autocomplete="off" />
                       <button class="name-submit" id="nameSubmit" type="submit">→</button>`;
     area.appendChild(row);
-    const submit = () => {
-      const val = document.getElementById("nameField").value.trim();
-      pushHistory();
-      state.name = val || "friend";
-      stopNarration();
-      currentId = node.next;
-      renderWithTransition();
-    };
-    row.addEventListener("submit", e => { e.preventDefault(); submit(); });
-  } else {
-    const choicesEl = document.createElement("div");
-    choicesEl.className = "choices";
-    node.choices.forEach(choice => {
-      const btn = document.createElement("button");
-      btn.className = "choice-btn";
-      btn.textContent = choice.label;
-      btn.onclick = () => { goTo(choice.next, choice.effect); };
-      choicesEl.appendChild(btn);
+    row.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("nameField").value.trim() || "friend";
+      goTo(node.next, { name });
     });
-    area.appendChild(choicesEl);
+    return;
   }
+
+  if (node.prompt) {
+    const p = document.createElement("p");
+    p.className = "map-title";
+    p.textContent = interpolate(val(node.prompt));
+    area.appendChild(p);
+  }
+  const choicesEl = document.createElement("div");
+  choicesEl.className = "choices";
+  visibleChoices(node).forEach(choice => {
+    const btn = document.createElement("button");
+    const done = choice.done && choice.done(state);
+    btn.className = "choice-btn" + (done ? " visited" : "");
+    btn.textContent = interpolate(val(choice.label));
+    if (done) {
+      const sub = document.createElement("span");
+      sub.className = "sub";
+      sub.textContent = "visited";
+      btn.appendChild(sub);
+    }
+    btn.onclick = () => { choice.back ? goBack() : goTo(val(choice.next), choice.effect); };
+    choicesEl.appendChild(btn);
+  });
+  area.appendChild(choicesEl);
 }
 
 // ---------- RENDER: MENU ----------
@@ -777,15 +1992,15 @@ function renderMenu() {
   choicesEl.className = "choices";
 
   const items = [
-    { label: "Hasi", next: "introWinter" },
-    { label: "Informazioa", next: "infoScreen" },
-    { label: "Honi buruz", next: "aboutScreen" }
+    { label: "Hasi", action: startGame },
+    { label: "Informazioa", action: () => goTo("infoScreen") },
+    { label: "Honi buruz", action: () => goTo("aboutScreen") }
   ];
   items.forEach(item => {
     const btn = document.createElement("button");
     btn.className = "choice-btn";
     btn.textContent = item.label;
-    btn.onclick = () => { goTo(item.next); };
+    btn.onclick = item.action;
     choicesEl.appendChild(btn);
   });
 
@@ -801,49 +2016,10 @@ function renderMenu() {
   area.appendChild(choicesEl);
 }
 
-// ---------- RENDER: MAP ----------
-function renderMap() {
-  renderScene("mapScene");
-  document.getElementById("listenRow").style.display = "none";
-
-  const area = document.getElementById("interactiveArea");
-  area.innerHTML = "";
-
-  typeText(document.getElementById("storyText"), interpolate("The forest opens onto a wide clearing. A few paths lead further in — you can choose where to go, {name}."), () => {
-    area.innerHTML = '<p class="map-title">Where will you go?</p>';
-    const choicesEl = document.createElement("div");
-    choicesEl.className = "choices";
-
-    const locations = [
-      { quest: "basajaun", label: "Basajaun's clearing", start: "basajaunStart", revisit: "basajaunRevisit" },
-      { quest: "atarrabi", label: "Atarrabi", start: "atarrabiEncounter", revisit: "atarrabiRevisit" },
-      { quest: "sorginak", label: "The sorginak's fire", start: "sorginakEncounter", revisit: "sorginakRevisit" }
-    ];
-
-    locations.forEach(loc => {
-      const resolved = state.quests[loc.quest] === "resolved";
-      const btn = document.createElement("button");
-      btn.className = "choice-btn" + (resolved ? " visited" : "");
-      btn.innerHTML = loc.label + (resolved ? '<span class="sub">visited</span>' : "");
-      btn.onclick = () => { goTo(resolved ? loc.revisit : loc.start); };
-      choicesEl.appendChild(btn);
-    });
-
-    if (state.points >= 0) {
-      const mariBtn = document.createElement("button");
-      mariBtn.className = "choice-btn";
-      mariBtn.textContent = "Mari — seen near Anboto";
-      mariBtn.onclick = () => { goTo("mariStub"); };
-      choicesEl.appendChild(mariBtn);
-    }
-
-    area.appendChild(choicesEl);
-  });
-}
-
 // ---------- MAIN RENDER ----------
 function render() {
-  document.getElementById("nodeIdTag").textContent = currentId;
+  document.getElementById("nodeIdTag").textContent =
+    `${currentId} · favour ${favour(state)}/${FAVOUR_NEEDED} · facts ${state.facts.length}/3`;
   updateTopBar();
   const isMenu = currentId === "menu";
   document.body.classList.toggle("menu-mode", isMenu);
@@ -853,7 +2029,6 @@ function render() {
     document.getElementById("menuMusic").pause();
   }
   if (isMenu) { renderMenu(); return; }
-  if (currentId === "map") { renderMap(); return; }
   renderNode(story[currentId]);
 }
 
@@ -878,12 +2053,10 @@ function pushHistory() {
 
 function goTo(nextId, effect) {
   pushHistory();
-  if (effect) {
-    if (effect.points) state.points += effect.points;
-    if (effect.resolve) state.quests[effect.resolve] = "resolved";
-  }
+  currentId = enterNode(nextId, effect);
+  // Entering Mari's cave (and leaving it) wipes the undo history, so mistakes there stick.
+  if (story[currentId] && story[currentId].clearHistory) history = [];
   stopNarration();
-  currentId = nextId;
   renderWithTransition();
 }
 
@@ -894,6 +2067,12 @@ function goBack() {
   state = prev.state;
   stopNarration();
   renderWithTransition();
+}
+
+function startGame() {
+  state = newState(state.audioEnabled);
+  history = [];
+  goTo("introWinter");
 }
 
 function toggleAudio() {
@@ -912,15 +2091,18 @@ function restartGame() {
   stopNarration();
   document.getElementById("menuMusic").pause();
   history = [];
-  state = { name: "", points: -10, quests: { basajaun: "unresolved", atarrabi: "unresolved", sorginak: "unresolved" }, audioEnabled: state.audioEnabled };
+  state = newState(state.audioEnabled);
   currentId = "menu";
   renderWithTransition();
 }
 
 function updateTopBar() {
-  const backBtn = document.getElementById("topBack");
-  backBtn.style.opacity = history.length ? "1" : "0.35";
-  backBtn.style.pointerEvents = history.length ? "auto" : "none";
+  const node = story[currentId];
+  const locked = !!(node && node.noBack);
+  const setEnabled = (id, on) => document.getElementById(id).classList.toggle("disabled", !on);
+  setEnabled("topBack", history.length > 0 && !locked);
+  setEnabled("topMap", !!state.flags.reachedMap && !locked && currentId !== "map");
+  setEnabled("topHints", currentId !== "menu" && currentId !== "hintsScreen");
   document.getElementById("topMute").textContent = state.audioEnabled ? "🔇" : "🔈";
 }
 
