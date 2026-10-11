@@ -1564,33 +1564,30 @@ const story = {
     text: s => "Sua berriro biztu egiten da. " + honesty(s).answer + hika(s, "\n\n“Orain, esadak zergatik etorri haizen.”", "\n\n“Orain, esadan zergatik etorri haizen.”"),
     choices: NEXT("mariCave4")
   },
+  // Mari doesn't call Sugaar here: she promises to speak to him, and only he decides. The
+  // child finds out whether it worked back with Mari Domingi (see the ENDING below).
   mariCave4: {
     image: "mariCave",
     noBack: true,
-    text: "Dena kontatzen diozu: ekaitza, Olentzeroren sua, Mari Domingi, gau luzea. Amaitzen duzunean, Mari zutitu, kobazuloaren ahoraino joan eta hitz bakar bat oihukatzen du ekaitzera.\n\nMendi osoak dardara egiten du.",
-    choices: NEXT("mariSugaar1")
+    text: "Dena kontatzen diozu: ekaitza, Olentzeroren sua, Mari Domingi, gau luzea. Marik isilik entzuten zaitu, orrazia eskuan. Amaitzen duzunean, kobazuloaren ahorantz begiratzen du, kanpoko ilunpera.",
+    choices: NEXT("mariPromise")
   },
-  mariSugaar1: {
-    image: "sugaar",
+  mariPromise: {
+    image: "mariCave",
     noBack: true,
-    effect: { lore: "sugaar" },
-    text: "Zerbait izugarri jaisten da hodeietatik: suz eta ekaitzez egindako suge bat, kobazulo-ahoko harkaitzen inguruan bilduta. Ukitzen duen tokian, elurra lurrun bihurtzen da txistuka. Sugaar.\n\nEz dizu begiratzen. “Zergatik deitu didan, Mari?”",
-    choices: NEXT("mariSugaar2")
-  },
-  mariSugaar2: {
-    image: "sugaar",
-    noBack: true,
-    text: "“Olentzeroren sua itzali egin da”, dio Marik.\n\nSugaarren ahotsa urruneko ortzantza bezalakoa da. “Gizakien suak? Niretzat ezer ez.”\n\n“Haur honek”, dio Marik, “Gabon gauean igo dik nire mendia, behar bezala hitz egin eta egia esan. Ezetz esango al duk?”\n\nLehen aldiz, Sugaarrek bere begi goriak zuregana itzultzen ditu. Begiak ez apartatzera behartzen duzu zure burua.\n\n“Behin”, dio.",
+    text: s => hika(s,
+      "“Sugaarrek ez dik inor entzuten, ni izan ezik. Gaur gauean berarekin hitz egingo diat.” Begiak zorrozten zaizkio. “Baina egingo duen ala ez, bere kontua duk, ez nirea.”",
+      "“Sugaarrek ez din inor entzuten, ni izan ezik. Gaur gauean berarekin hitz egingo dinat.” Begiak zorrozten zaizkio. “Baina egingo duen ala ez, bere kontua dun, ez nirea.”"),
     choices: NEXT("mariDismiss")
   },
   mariDismiss: {
     image: "mariCave",
     noBack: true,
     text: s => hika(s,
-      "Mari zuregana itzultzen da. “Hoa orain, {name}. Hi joan ondoren, Sugaarrek hegan egingo dik.”",
-      "Mari zuregana itzultzen da. “Hoa orain, {name}. Hi joan ondoren, Sugaarrek hegan egingo din.”"),
+      "Mari zuregana itzultzen da. “Hoa orain, {name}, Mari Domingirengana. Gaua luzea izango duk.”",
+      "Mari zuregana itzultzen da. “Hoa orain, {name}, Mari Domingirengana. Gaua luzea izango dun.”"),
     choices: [
-      { label: "Buelta eman eta korrika atera, ikustera", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } },
+      { label: "Buelta eman eta korrika atera", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } },
       { label: "Atzeraka irten, pausoz pauso, aurpegiz bera begira", next: "endOutside" },
       { label: "Burua makurtu, gero buelta eman eta lasai irten", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } }
     ]
@@ -1612,27 +1609,42 @@ const story = {
   mariFailBack: {
     image: "caveDark",
     noBack: true, clearHistory: true,
-    text: s => `Buelta ematen duzunean, haize-bolada batek bizkarrean jotzen zaitu. Atzera begiratzen duzunean, kobazuloa ilun eta hutsik dago, eta Sugaar ere desagertu da. Goian, bi su ari dira zeruan zehar ziztuan ${peak(s).name} aldera.\n\nOrain badakizu: ez diozu inoiz bizkarrik eman behar Mariri.`,
+    text: s => `Buelta ematen duzunean, haize-bolada batek bizkarrean jotzen zaitu. Atzera begiratzen duzunean, kobazuloa ilun eta hutsik dago. Goian, su-bola bat ari da zeruan zehar ziztuan ${peak(s).name} aldera, eta Mariren hitza berarekin doa.\n\nOrain badakizu: ez diozu inoiz bizkarrik eman behar Mariri.`,
     choices: [{ label: "Soilgunera jaitsi", next: "map" }]
   },
 
   // ===================== ENDING =====================
+  // The payoff happens with Mari Domingi: the child doesn't know if Sugaar will listen until
+  // they both see him cross the sky, and the light the child saw go out comes back on.
   endOutside: {
     image: "caveMouth",
     noBack: true, clearHistory: true,
-    text: "Pauso zaindu bat bestearen atzetik, atzeraka irteten zara kobazulotik, Damari begirada kendu gabe, mendiko aire hotzak inguratzen zaituen arte. Kobazulo barruko distira itzaltzen doa.\n\nOrduan, mendiak dardara egiten du.",
-    choices: NEXT("endSugaar")
+    text: "Pauso zaindu bat bestearen atzetik, atzeraka irteten zara kobazulotik, Damari begirada kendu gabe, mendiko aire hotzak inguratzen zaituen arte. Kobazulo barruko distira itzaltzen doa.",
+    choices: NEXT("endWalkDown")
   },
-  endSugaar: {
+  endWalkDown: {
+    image: "walkDown",
+    noBack: true,
+    text: "Mendian behera jaisten zara, iluntzen ari duen bitartean. Ekaitza isildu da; elurra eta izarrak besterik ez daude. Behin eta berriz begiratzen diozu zeruari. Ezer ez.\n\nMarik hitz egingo dio. Baina Sugaarrek, entzungo al dio?",
+    choices: NEXT("endClearing")
+  },
+  endClearing: {
+    image: "maridomingi",
+    noBack: true,
+    text: "Soilgunean, Mari Domingi zain dago bere su txikiaren ondoan, besoak bere buruaren inguruan. Zu ikusi bezain laster zutitzen da. “Eta?”\n\nDena kontatzen diozu. Mari Domingik entzun, eta isilik geratzen da, zeruari begira. “Orain itxaron besterik ez dago”, dio xuxurlaka.",
+    choices: NEXT("endSky")
+  },
+  endSky: {
     image: "skyFire",
     noBack: true,
-    text: "Sugaar zure gaineko tontorretik lehertzen da: suzko suge handi bat, ezkatak txingar goriak bezala. Zeruan zehar isurtzen da haranerantz, kilometroetan zehar elurra argituz.",
-    choices: NEXT("endLightning")
+    effect: { lore: "sugaar" },
+    text: "Bat-batean, zerua iluntzen da. Izarrak banan-banan itzaltzen dira. Ortzantza batek lurra astintzen du zuen oinen azpian.\n\nEta orduan ikusten duzue: Sugaar, suzko suge izugarri bat, zeruan zehar erretzen, mendirantz.",
+    choices: NEXT("endLight")
   },
-  endLightning: {
-    image: "skyFire",
+  endLight: {
+    image: "mountainLight",
     noBack: true,
-    text: "Behean, urrun, basoaren ertzean, suzko tximista batek tximinia txiki bat jotzen du. Ilun zegoen leiho bat distiraka hasten da, epel eta urrekara.",
+    text: "Mendian goian, urrun, argi txiki bat dir-dir egiten hasten da ilunpetan. Gero eta biziago. Bart itzaltzen ikusi zenuen argi bera.\n\nMari Domingik eskua estutzen dizu. “Piztu da”, dio, ahotsa dardaraz. “Sua piztu da. Lortu duzu, {name}.”",
     choices: NEXT("endGabonGaua")
   },
   endGabonGaua: {
@@ -1641,49 +1653,41 @@ const story = {
     next: "endOlentzero",
     hold: 3800
   },
+  // Olentzero traditionally comes down from the mountains on Christmas Eve.
   endOlentzero: {
     image: "olentzero",
     noBack: true,
-    text: "Mari Domingik basoaren barruko txabola batera eramaten zaitu, zaku, pakete eta ikatz usainez betea. Su bat dago orroka sutondoan. Gizon handi bat, aurpegia kedarrez beltz, pipa eta txapela dituena, buelta ematen du: Olentzero.\n\n“Beraz, zu zara {name}”, dio. “Mari Domingik dena kontatu dit.”",
+    text: "Handik gutxira, oinatz astunak entzuten dira elurretan. Gizon handi bat jaisten da mendiko bidetik, zakua bizkarrean, pipa ahoan eta txapela buruan: Olentzero. Aurpegia kedarrez beltz dauka, eta irribarre zabala.\n\n“Mari Domingi! Sua piztuta dago!” Orduan zuri begiratzen dizu. “Eta hau izango da gure laguntzailea.”",
     choices: [
-      { label: "Galdetu zenbat opari dauden", next: "endPresents" },
-      { label: "Galdetu ea lagundu dezakezun", next: "endHelp" },
-      { label: "Agur esan", next: "endBye" }
+      { label: "“Gure etxera ere etorriko zara?”", next: "endWink" },
+      { label: "Irribarre egin, ezer esan gabe", next: "endThanks" }
     ]
   },
-  endPresents: {
+  endWink: {
     image: "olentzero",
     noBack: true,
-    text: "“Zenbat?” Olentzerok bizarrari hazka egiten dio eta orban beltz bat uzten du. “Bat, hemendik itsasoraino dagoen herri bakoitzeko haur bakoitzarentzat. Eta horietako bat bera ere ez litzateke prest egongo su hori gabe.”",
-    choices: [
-      { label: "Galdetu ea lagundu dezakezun", next: "endHelp" },
-      { label: "Agur esan", next: "endBye" }
-    ]
+    text: "Olentzerok begi-keinu bat egiten dizu. “Gaur gauean? Orduan begiak ondo itxita eduki beharko dituzu.”",
+    choices: NEXT("endThanks")
   },
-  endHelp: {
+  endThanks: {
     image: "olentzero",
     noBack: true,
-    text: "Barre egin eta lokarri-mataza bat ematen dizu. Denbora batez, paketeak lotzen dituzue elkarren ondoan, Mari Domingik bioi aginduak ematen dizkizuen bitartean. Zure korapiloak izugarri txarrak dira. Inori ez zaio axola.",
-    choices: [{ label: "Agur esan", next: "endBye" }]
-  },
-  endBye: {
-    image: "olentzero",
-    noBack: true,
-    text: "“Eskerrik asko, {name}. Orain, etxera! Zure aitona falta zarela konturatu baino lehen!”",
+    text: "Olentzero belauniko jartzen da zure parean. Ikatz eta egur-ke usaina du. “Eskerrik asko, {name}. Zuri esker, haur guztiek izango dute zerbait gaur gauean.”\n\nZutitu, Mari Domingiri besotik heldu, eta biak abiatzen dira mendian gora. “Lan asko dugu!” oihukatzen du Mari Domingik, atzera begira. “Zoaz etxera!”",
     choices: NEXT("endHome")
   },
   endHome: {
     image: "baserriNight",
     noBack: true,
-    text: s => "Mari Domingik basoaren ertzeraino laguntzen dizu. Baserriko leihoek distira egiten dute. Barruan, Gabon-subila erretzen ari da sutondoan" +
+    text: s => "Baserriko atea irekitzen duzu. Sutondoan, Gabon-subila erretzen ari da" +
       (s.kind.log ? ", aitonari elurretan zehar eramaten lagundu zenion enbor bera" : "") +
-      ". Badirudi inor ez dela konturatu zenbat denbora egon zaren kanpoan.",
-    choices: NEXT("endMorning")
+      ". Ama eta aita leihoaren ondoan daude. “Hemen zaude! Bazen itzultzeko garaia, ekaitza dabil.”",
+    choices: NEXT("endWindow")
   },
-  endMorning: {
-    image: "baserriNight",
+  // The last line gets its own slide, at the same window the child watched the light go out from.
+  endWindow: {
+    image: "stormNight",
     noBack: true,
-    text: "Enborraren kraskarekin hartzen duzu loa. Eta goizean, sutondoaren ondoan, pakete txiki bat dago zure izenarekin, korapilo oso txarrekin lotuta.\n\n(Barruan zer dagoen: erabakitzeko.)",
+    text: "Leihotik begiratzen duzu. Urrun, mendian goian, argi txiki batek distira egiten du.\n\n“Bai...”, diozu. “Ekaitza.”",
     choices: NEXT("endCard")
   },
   endCard: {
@@ -1806,6 +1810,8 @@ const placeholders = {
   mariCave: PH.svg("#120d0a", PH.glow(200, 170, 170, "#d4a94f", 0.12) + PH.figure(200, "#6a5020") + `<rect x="222" y="120" width="20" height="8" fill="#f2c26a"/>` + PH.fire(320, 250, 0.7)),
   sugaar: PH.svg("#0d0a0a", `<path d="M20,80 C120,20 160,180 240,120 C320,60 300,220 380,200" stroke="#e08a42" stroke-width="26" fill="none" stroke-linecap="round"/><path d="M20,80 C120,20 160,180 240,120 C320,60 300,220 380,200" stroke="#f2c26a" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.7"/>`),
   caveDark: PH.svg("#050607", `<path d="M110,300 L110,200 C110,110 290,110 290,200 L290,300" stroke="#1c2226" stroke-width="4" fill="none"/><circle cx="340" cy="40" r="6" fill="#f2c26a" opacity="0.7"/>`),
+  walkDown: PH.svg("#0e1820", `<circle cx="80" cy="50" r="1.5" fill="#f2e6cf"/><circle cx="300" cy="35" r="2" fill="#f2e6cf"/>` + PH.peak("#1a242a") + `<path d="M200,300 C190,250 230,220 210,170" stroke="#cbb98f" stroke-width="3" fill="none" stroke-dasharray="4 6" opacity="0.4"/>` + PH.figure(205, "#2a2018", 0.35)),
+  mountainLight: PH.svg("#0a141c", PH.peak("#141c22") + PH.glow(205, 95, 22, "#f2c26a", 0.35) + `<circle cx="205" cy="95" r="4" fill="#f2c26a"/>` + PH.figure(140, "#5a3a2a", 0.55) + PH.figure(260, "#2a2018", 0.4)),
   skyFire: PH.svg("#0a141c", PH.hills("#0d1519") + `<path d="M20,40 C140,0 260,60 330,210" stroke="#e08a42" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.8"/>` + PH.house(280, 220, "#f2c26a")),
   olentzero: PH.svg("#1c140d", PH.fire(80, 230, 1.2) + PH.figure(220, "#3a2a1c", 1.1) + `<ellipse cx="330" cy="260" rx="40" ry="25" fill="#5a4632"/><ellipse cx="300" cy="275" rx="30" ry="18" fill="#4a3a28"/>`),
   baserriNight: PH.svg("#0a1016", `<circle cx="80" cy="50" r="1.5" fill="#f2e6cf"/><circle cx="300" cy="40" r="2" fill="#f2e6cf"/><circle cx="350" cy="90" r="1.5" fill="#f2e6cf"/>` + PH.hills("#0d1519") + PH.house(150, 210, "#f2c26a") + PH.glow(194, 240, 30, "#f2c26a", 0.2)),
