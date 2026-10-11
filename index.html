@@ -361,7 +361,7 @@ if (new URLSearchParams(window.location.search).has("dev")) {
 const val = v => (typeof v === "function" ? v(state) : v);
 
 function interpolate(text) {
-  return String(text || "").replace(/\{name\}/g, state.name || "friend");
+  return String(text || "").replace(/\{name\}/g, state.name || "laguna");
 }
 
 // ---------- FAVOUR (bookkeeping only — never shown or narrated) ----------
@@ -383,40 +383,40 @@ const favour = s => mainDone(s) * MAIN_QUEST_FAVOUR + Math.min(Object.keys(s.kin
 // three. Getting a rule wrong in the cave also teaches it, the hard way.
 const FACT_ORDER = ["hika", "noSit", "noBack"];
 const FACTS = {
-  hika:   "Speak to Mari with “hi”, as you would to family — never with “zu”, like a stranger.",
-  noSit:  "Never sit down in front of Mari, even if she offers you a seat.",
-  noBack: "Never turn your back on Mari. Leave walking backwards, facing her, the way you came in."
+  hika:   "Mariri “hi” erabiliz hitz egin, familiari bezala — inoiz ez “zu”, arrotz bati bezala.",
+  noSit:  "Ez eseri inoiz Mariren aurrean, eserlekua eskaintzen badizu ere.",
+  noBack: "Ez eman inoiz bizkarra Mariri. Atzeraka irten, aurpegiz bera begira, sartu zinen bide beretik."
 };
 const HINTS = {
   basajaun: {
-    hika:   "“You go to the Lady? Then speak to her plainly, the way you would to your own grandmother — with hi, not zu. She is as old as the mountains. Fancy manners from strangers mean nothing to her.”",
-    noSit:  "“You go to the Lady? Then remember this: in her cave, nobody sits. Not the shepherds who shelter there from storms, not even me. Stay on your feet, however tired you are.”",
-    noBack: "“You go to the Lady? Then when you leave her, do not turn your back. Walk out backwards, step by step, facing her, the way you came in.”",
-    none:   "“You already know how to stand before the Lady. Good. Go — and walk softly in my forest.”"
+    hika:   "“Damarengana zoaz? Orduan, hitz egin iezaiozu argi eta garbi, zure amonari bezala: hi erabiliz, ez zu. Mendiak bezain zaharra da. Arrotzen fintasunak ez du ezer esan nahi berarentzat.”",
+    noSit:  "“Damarengana zoaz? Orduan, gogoratu hau: bere kobazuloan inor ez da esertzen. Ez han ekaitzetik babesten diren artzainak, ezta ni neu ere. Egon zutik, nekatuta egonda ere.”",
+    noBack: "“Damarengana zoaz? Orduan, bera uztean, ez eman bizkarra. Irten atzeraka, pausoz pauso, aurpegiz bera begira, sartu zinen bezala.”",
+    none:   "“Badakizu dagoeneko nola egon Damaren aurrean. Ongi. Zoaz, eta ibili isil-isilik nire basoan.”"
   },
   atarrabi: {
-    hika:   "“You'll be going to see my mother, then. Speak to her with hi, the way family does. Nobody in our house has ever called her zu — it would sound like a stranger knocking at the door.”",
-    noSit:  "“You'll be going to see my mother, then. If she offers you a seat, thank her — but stay standing. Even I have never sat down in front of her.”",
-    noBack: "“You'll be going to see my mother, then. When she sends you away, walk out backwards, facing her. Turning your back on her is the worst rudeness there is.”",
-    none:   "“You'll be going to see my mother, then — and you already know how to behave in front of her. I think she'll like you.”"
+    hika:   "“Nire amarengana zoaz, beraz. Hitz egin iezaiozu hi erabiliz, familian egiten dugun bezala. Gure etxean inork ez dio inoiz zu esan: atea jotzen duen arrotz bat irudituko litzateke.”",
+    noSit:  "“Nire amarengana zoaz, beraz. Eserlekua eskaintzen badizu, eskerrak eman, baina egon zutik. Ni neu ere ez naiz inoiz bere aurrean eseri.”",
+    noBack: "“Nire amarengana zoaz, beraz. Joateko esaten dizunean, irten atzeraka, aurpegiz bera begira. Bizkarra ematea da egin dakiokeen lotsagabekeriarik handiena.”",
+    none:   "“Nire amarengana zoaz, beraz. Eta badakizu dagoeneko nola portatu bere aurrean. Nik uste begiko izango zaituela.”"
   },
   sorginak: {
-    hika:   "“In the Lady's house, we all speak to her with hi. Never zu! Zu is for strangers and tax collectors.”",
-    noSit:  "“We've served the Lady longer than anyone can remember, and not one of us has ever sat down in front of her. Neither should you, little one.”",
-    noBack: "“When you leave our Lady, walk out backwards, facing her. We sorginak can do it in the dark without bumping into a thing. You'll just have to be careful.”",
-    none:   "“But you know the Lady's ways already, don't you? Off you go, then!”"
+    hika:   "“Damaren etxean denok hi esaten diogu. Inoiz ez zu! Zu arrotzentzat eta zerga-biltzaileentzat da.”",
+    noSit:  "“Inork gogoratzen ez duen aspalditik zerbitzatzen dugu Dama, eta gutako inor ez da inoiz bere aurrean eseri. Zu ere ez, txikitxo.”",
+    noBack: "“Gure Dama uztean, irten atzeraka, aurpegiz bera begira. Sorginok ilunpetan ere egiten dugu, ezer jo gabe. Zuk kontu handia izan beharko duzu, besterik ez.”",
+    none:   "“Baina Damaren ohiturak ezagutzen dituzu dagoeneko, ezta? Aurrera, bada!”"
   },
   joanes: {
-    hika:   "“She spoke to me as if I were her own grandson, and I answered her the same way — with hi, not zu. My grandmother had told me that was right, and the Lady smiled at me.”",
-    noSit:  "“I was so tired I nearly sat down on a rock in her cave. Something stopped me. Later my grandmother told me: nobody sits before the Lady. Nobody.”",
-    noBack: "“When I left, I walked out backwards, facing her, all the way out of the cave. My grandmother had told me: never turn your back on the Lady.”",
-    none:   "“But you know all about the Lady already, by the look of you.”"
+    hika:   "“Bere biloba banintz bezala hitz egin zidan, eta nik ere berdin erantzun nion: hi erabiliz, ez zu. Amonak esana zidan hori zela zuzena, eta Damak irribarre egin zidan.”",
+    noSit:  "“Hain nengoen nekatuta, ezen ia harri baten gainean eseri bainintzen bere kobazuloan. Zerbaitek geldiarazi ninduen. Gero amonak esan zidan: inor ez da esertzen Damaren aurrean. Inor ez.”",
+    noBack: "“Alde egin nuenean, atzeraka irten nintzen, aurpegiz bera begira, kobazulotik kanpora arte. Amonak esana zidan: ez eman inoiz bizkarra Damari.”",
+    none:   "“Baina zuk badakizu dagoeneko dena Damari buruz, itxuraz.”"
   },
   lamina: {
-    hika:   "“Speak to the Lady with hi, as family does. We river folk always have.”",
-    noSit:  "“In the Lady's presence, stay on your feet. Even we lamiak stand before her.”",
-    noBack: "“When you leave the Lady, go out backwards, facing her. Never show her your back.”",
-    none:   "“But you already know the Lady's ways, I think. Go well, little one.”"
+    hika:   "“Hitz egin Damari hi erabiliz, familiak egiten duen bezala. Ibaiko jendeak beti egin izan du horrela.”",
+    noSit:  "“Damaren aurrean, egon zutik. Lamiok ere zutik egoten gara bere aurrean.”",
+    noBack: "“Damari agur esatean, irten atzeraka, aurpegiz bera begira. Ez erakutsi inoiz bizkarra.”",
+    none:   "“Baina Damaren ohiturak ezagutzen dituzu dagoeneko, nik uste. Ondo ibili, txikitxo.”"
   }
 };
 const hint = giver => s => HINTS[giver][s.lastFact || "none"];
@@ -424,20 +424,20 @@ const knownFacts = s => FACT_ORDER.filter(f => s.facts.includes(f)).map(f => "�
 
 // ---------- JOURNAL ENTRIES ----------
 const LORE = {
-  etxeIzena:     "Old Basque farmhouses have their own names, and families were often known by the name of their house rather than their surname.",
-  eguzkilore:    "The eguzkilore (“sun-flower”) is a dried thistle flower hung on doors to protect the house. Any spirit that wants to come in must first count all its spiky petals — and dawn comes before they finish.",
-  olentzero:     "Olentzero is a charcoal-burner (ikazkin) who lives up in the mountains and comes down to the villages on Christmas Eve.",
-  subila:        "The Gabon-subila is a big log burned all through Christmas Eve night, to protect the house, the animals and the family.",
-  basajaun:      "Basajaun, lord of the forest: huge and hairy, with one foot like a person's and one round foot. He protects the shepherds' flocks and howls to warn them when wolves or storms are coming. Shepherds leave him bread.",
-  saw:           "Legend says people learned to sow wheat and to make saws from the basajaunak — tricked out of them by clever San Martin Txiki, who copied the saw from the edge of a chestnut leaf.",
-  jentilak:      "The jentilak were giants of the old times. People said they put up the great stone monuments on the hills, and threw boulders from mountain to mountain.",
-  atarrabi:      "Atarrabi is Mari's good son. He has no shadow: he left it behind long ago, taking on a burden that should have fallen to his brother.",
-  mikelats:      "Mikelats is Mari's other son — a troublemaker who sends hail down onto the farmers' fields.",
-  sorginak:      "The sorginak are Mari's household: they serve her and keep her secrets. Long ago, their name was used to blame ordinary, innocent women for storms and sickness. That was fear, not truth.",
-  lamiak:        "Lamiak are river women with webbed feet like a duck's, who comb their long hair with golden combs. They help people who are kind to them — some say they built bridges in a single night.",
-  galtzagorriak: "Galtzagorriak (“red-trousers”) are tiny, tireless helpers kept in a needle case. They always want work — “Zer egin? Zer egin?” — and if you run out of jobs for them, watch out!",
-  mari:          "Mari, the Lady, lives in caves high on mountains like Anboto, Txindoki and Aizkorri, and flies between them as a ball of fire. When Anboto wears a cloud, she is at home. She can't abide lies, boasting or broken promises.",
-  sugaar:        "Sugaar is Mari's companion: a great serpent of fire and storm."
+  etxeIzena:     "Baserri zaharrek beren izena dute, eta familiak askotan etxearen izenez ezagutzen ziren, ez abizenez.",
+  eguzkilore:    "Eguzkilorea (“eguzkiaren lorea”) kardu-lore lehor bat da, etxea babesteko ateetan jartzen dena. Barrura sartu nahi duen izpiritu orok bere petalo zorrotz guztiak zenbatu behar ditu lehenengo, eta egunsentia iristen da amaitu aurretik.",
+  olentzero:     "Olentzero ikazkina da: mendian bizi da, ikatza egiten, eta Gabon gauean herrietara jaisten da.",
+  subila:        "Gabon-subila enbor handi bat da, Gabon gau osoan zehar erretzen dena, etxea, abereak eta familia babesteko.",
+  basajaun:      "Basajauna, basoko jauna: erraldoia eta iletsua, oin bat pertsona batena bezalakoa eta bestea biribila. Artzainen artaldeak babesten ditu, eta oihu egiten du otsoak edo ekaitza datozenean, abisatzeko. Artzainek ogia uzten diote.",
+  saw:           "Kondairak dioenez, gizakiek basajaunei ikasi zieten garia ereiten eta zerra egiten: San Martin Txiki azkarrak engainatu zituen, eta gaztainondoaren hostoaren ertzari begira asmatu zuen zerra.",
+  jentilak:      "Jentilak antzinako erraldoiak ziren. Diotenez, haiek altxatu zituzten muinoetako harrizko monumentu handiak, eta mendi batetik bestera jaurtitzen zituzten harkaitzak.",
+  atarrabi:      "Atarrabi Mariren seme ona da. Ez du itzalik: aspaldi utzi zuen atzean, bere anaiari zegokion zama bere gain hartuta.",
+  mikelats:      "Mikelats Mariren beste semea da: bihurria, nekazarien soroetara txingorra botatzen duena.",
+  sorginak:      "Sorginak Mariren etxekoak dira: bera zerbitzatzen dute eta bere sekretuak gordetzen. Aspaldi, haien izena erabili zen emakume arrunt eta errugabeei ekaitzen eta gaixotasunen errua botatzeko. Hori beldurra zen, ez egia.",
+  lamiak:        "Lamiak ibaiko emakumeak dira, ahatearen antzeko oinak dituztenak, eta ile luzea urrezko orraziekin orrazten dute. Beraiekin onak direnei laguntzen diete; batzuen esanetan, zubiak gau bakar batean eraiki zituzten.",
+  galtzagorriak: "Galtzagorriak laguntzaile txiki-txiki eta nekaezinak dira, orratz-ontzi batean gordetzen direnak. Beti lana nahi dute — “Zer egin? Zer egin?” — eta lanik gabe uzten badituzu, kontuz!",
+  mari:          "Mari, Dama, mendi tontorretako kobazuloetan bizi da, hala nola Anboton, Txindokin eta Aizkorrin, eta haien artean su-bola bat bezala hegan egiten du. Anbotok hodeia duenean, etxean dago. Ezin ditu jasan gezurrak, harrokeria eta hitza ez betetzea.",
+  sugaar:        "Sugaar Mariren laguna da: suzko eta ekaitzezko suge handi bat."
 };
 
 // ---------- MARI'S MOUNTAINS ----------
@@ -452,30 +452,30 @@ const peak = s => PEAKS[s.mari.peak];
 // In the cave Mari asks one honest question, chosen from what the child actually did.
 function honesty(s) {
   if (s.declinedEver.basajaun) return {
-    question: "“The lord of the forest tells me a child ran away from him tonight. Was it thou?”",
-    truth: "“Yes. It was me. I was scared.”", lie: "“No — that wasn't me.”",
-    answer: "“Afraid — and still thou camest here, and told me the truth. That is worth more than never being afraid.”" };
+    question: "“Basoko jaunarengandik jakin diat haur batek ihes egin ziola gaur gauean. Hi izan al hintzen?”",
+    truth: "“Bai, ni. Beldurrez.”", lie: "“Ez, ni ez.”",
+    answer: "“Beldurrez, eta hala ere hona etorri haiz, eta egia esan didak. Hori beldurrik inoiz ez izatea baino gehiago duk.”" };
   if (s.declinedEver.atarrabi) return {
-    question: "“My son Atarrabi tells me a child walked away from him on the hermitage hill tonight. Was it thou?”",
-    truth: "“Yes. It was me.”", lie: "“No — that wasn't me.”",
-    answer: "“So it was. And now thou hast told me so, to my face. Good.”" };
+    question: "“Nire seme Atarrabirengandik jakin diat haur batek bizkarra eman ziola gaur gauean, ermitako muinoan. Hi izan al hintzen?”",
+    truth: "“Bai, ni.”", lie: "“Ez, ni ez.”",
+    answer: "“Hala izan zuan. Eta orain aurrez aurre esan didak. Ongi.”" };
   if (s.declinedEver.sorginak) return {
-    question: "“My sorginak tell me a child ran away from their fire tonight. Was it thou?”",
-    truth: "“Yes. I was scared of them.”", lie: "“No — that wasn't me.”",
-    answer: "“Many are. Few say so. Thou art honest, at least.”" };
+    question: "“Nire sorginengandik jakin diat haur batek ihes egin ziela gaur gauean, beren suaren ondotik. Hi izan al hintzen?”",
+    truth: "“Bai, ni. Haien beldur.”", lie: "“Ez, ni ez.”",
+    answer: "“Asko izaten dituk beldur; gutxik aitortzen. Zintzoa haiz, behintzat.”" };
   if (s.flags.followedMikelats) return {
-    question: "“My son Mikelats boasts that a child followed his shortcut tonight. Was it thou?”",
-    truth: "“Yes. I thought it would be quicker.”", lie: "“No — I'd never follow him.”",
-    answer: "“Ha! Many have. Few admit it.”" };
+    question: "“Nire seme Mikelats harro zegok: haur batek bere bidezidorra hartu omen dik gaur gauean. Hi izan al hintzen?”",
+    truth: "“Bai, ni. Azkarrago izango zelakoan.”", lie: "“Ez! Hari jarraitu? Inoiz ez.”",
+    answer: "“Ha! Asko joan dituk haren atzetik. Gutxik aitortzen.”" };
   return {
-    question: "“Thou hast done a great deal tonight. Didst thou do it all alone?”",
-    truth: "“No — lots of people helped me.”", lie: "“Yes! All by myself.”",
-    answer: "“Good. Only fools think they do great things alone.”" };
+    question: "“Gauza asko egin dituk gaur gauean. Bakar-bakarrik egin al dituk?”",
+    truth: "“Ez, jende askoren laguntzaz.”", lie: "“Bai! Bakar-bakarrik.”",
+    answer: "“Ongi. Gauza handiak bakarrik egiten direla uste izatea, ergelen kontua duk.”" };
 }
 
 // Shorthands for the story below.
 const NEXT = (next, effect) => [{ label: "Jarraitu", next, effect }];
-const TO_CLEARING = { label: "Back to the clearing", next: "map" };
+const TO_CLEARING = { label: "Soilgunera itzuli", next: "map" };
 
 // ---------- STORY DATA ----------
 const story = {
@@ -491,9 +491,9 @@ const story = {
   },
   hintsScreen: {
     image: "empty",
-    text: s => "HOW TO STAND BEFORE MARI\n" + (knownFacts(s) || "Nothing yet.") +
-      "\n\nTHINGS I'VE LEARNED\n" + (s.lore.length ? s.lore.map(l => "• " + LORE[l]).join("\n") : "Nothing yet."),
-    choices: [{ label: "Close the journal", back: true }]
+    text: s => "NOLA AURKEZTU MARIREN AURREAN\n" + (knownFacts(s) || "Ezer ez oraindik.") +
+      "\n\nIKASI DUDANA\n" + (s.lore.length ? s.lore.map(l => "• " + LORE[l]).join("\n") : "Ezer ez oraindik."),
+    choices: [{ label: "Itxi koadernoa", back: true }]
   },
   introWinter: {
     image: "winterVillage",
@@ -508,56 +508,44 @@ const story = {
   introSpecialFire: {
     image: "fireHearth",
     text: "Olentzero eta Mari Domingik ere badute beraien sua. Su berezia itzaltzen ez dena. Neguko gau luzeetan piztuta mantentzen dena, argi biziz, gauean zehar lanean jarraitzeko. Opariak gabonetarako prest edukitzeko modu bakarra dute.",
-    choices: [{ label: "Jarraitu", next: "introStorm" }]
-  },
-  introStorm: {
-    image: "coldNight",
-    text: "Baino etengabeko ekaitzak sua bere azkenetan du. Olentzero eta Mari Domingi etengabe dabiltza etxea babesten, haize hotza etxetik at mantentzeko, betirako sua itzal ez dadin",
-    choices: [{ label: "Jarraitu", next: "introWindBursts" }]
-  },
-  introWindBursts: {
-    image: "windBursts",
-    text: "Baina haize bolada batek ate eta leihoak ireki ditu, bultzada batez. Elurra dabil etxe guztitik bueltaka. 'Mari Domingi! Betirako sua... ' dio Olentzerok.",
-    choices: [{ label: "Jarraitu", next: "introFireDies" }]
-  },
-  introFireDies: {
-    image: "fireDies",
-    text: 'Baina berandu da. Ekaitza gailendu da etxean. Itzali da sua. "Olentzero... Berehala konpondu behar dugu hau, bestela gabon gaua, opariak... Ez digu denbora emango"',
+    // The prologue stops here on purpose: a fire that "never goes out" is the hook. The child
+    // sees it go out from the window on the storm night, and Mari Domingi tells the rest.
     choices: [{ label: "Jarraitu", next: "dayZero" }]
   },
+  // Two date cards frame the child's two days: today, and tomorrow (Christmas Eve).
   dayZero: {
     type: "interstitial",
-    text: "Egun bat lehenago...",
+    text: "Abenduaren 23a",
     next: "dayHome",
-    hold: 2200
+    hold: 3500
   },
   dayHome: {
     image: "goizekoelurra",
     text: 'Elurra ari du kanpoan. "Maleta prestatu al duzu?" galdetzen dute gurasoek. \u201cEz dakit zertarako joan behar dugun baserrira gabonetan, herrian lagunekin egon beharrean\u201d pentsatzen duzu, marmarka. "Bai, prestatu dut..."',
     // Whatever the child packs turns out useful somewhere later — there's no wrong answer.
     choices: [
-      { label: "Pack your torch", next: "dayCar", effect: { item: "torch" } },
-      { label: "Pack a bag of sweets", next: "dayCar", effect: { item: "sweets" } },
-      { label: "Pack your woolly hat", next: "dayCar", effect: { item: "hat" } }
+      { label: "Linterna sartu maletan", next: "dayCar", effect: { item: "torch" } },
+      { label: "Gozoki-poltsa bat sartu", next: "dayCar", effect: { item: "sweets" } },
+      { label: "Artilezko txanoa sartu", next: "dayCar", effect: { item: "hat" } }
     ]
   },
   dayCar: {
     image: "carRoad",
     text: "Egun osoa bidean pasako dugu hemen. \u201cEderra dugu elurte honekin, ez dakit iritsiko garen!\u201d dio aitak. Ez dakit zergatik kexatzen diren helduak elurraz. Gidatu beharrean elurretan jolasean arituko bagina, alde ederrean.... ederra litzateke urteko elurra horrela egingo balu",
     choices: [
-      { label: "Look out of the window at the snowy forest", next: "dayCarWindow" },
-      { label: "Ask what the baserri is like", next: "dayCarHouse" },
-      { label: "Close your eyes and sleep", next: "dayArrival" }
+      { label: "Leihotik begiratu baso elurtera", next: "dayCarWindow" },
+      { label: "Galdetu nolakoa den baserria", next: "dayCarHouse" },
+      { label: "Begiak itxi eta lo egin", next: "dayArrival" }
     ]
   },
   dayCarWindow: {
     image: "carRoad",
-    text: "Between the trees, just for a second, you think you see something huge and hairy standing by the road, watching the car go past. You blink — and it's only an old tree stump. Probably.",
+    text: "Zuhaitzen artean, une batez, zerbait erraldoi eta iletsua ikusten duzula iruditzen zaizu, bide ertzean zutik, autoa pasatzen ikusten. Begiak kliskatu, eta zuhaitz-enbor zahar bat besterik ez da. Seguruenik.",
     choices: NEXT("dayArrival")
   },
   dayCarHouse: {
     image: "carRoad",
-    text: "“The house is more than three hundred years old,” says ama. “It has its own name, like all the old baserriak. For a long time, people round here called our family by the name of the house, not by our surname.”\n\nA house with its own name. Weird.",
+    text: "“Etxeak hirurehun urte baino gehiago ditu”, dio amak. “Bere izena du, baserri zahar guztiek bezala. Denbora luzez, hemengo jendeak etxearen izenez deitzen zion gure familiari, ez abizenez.”\n\nEtxe batek bere izena. Bitxia.",
     choices: NEXT("dayArrival", { lore: "etxeIzena" })
   },
   dayArrival: {
@@ -565,25 +553,32 @@ const story = {
     text: "Horra baserria. zihurrenik gabonetan ere lekak edo babarrunak jango ditugula. Ezin txakurrarekin jolastu, jostailurik ez, eta okerrena, dinosaurioen garaiko telebista zahar bat...",
     choices: NEXT("dayStormNight")
   },
-  // The storm in the prologue happens tonight — this is where the child's day catches up with it.
+  // Tonight's storm is the one that puts out Olentzero's fire. Whichever choice the child makes,
+  // they see a light on the mountain go out — Mari Domingi pays this off when they meet.
   dayStormNight: {
     image: "stormNight",
-    text: "That night, the storm arrives. The wind howls round the old baserri, the shutters bang, and the whole house creaks like a ship at sea.",
+    text: "Gau horretan iristen da ekaitza. Haizeak orroka egiten du baserri zaharraren inguruan, kontraleihoek kolpeka jotzen dute, eta etxe osoak karraska egiten du, itsasoko ontzi batek bezala.",
     choices: [
-      { label: "Pull the blankets over your head", next: "dayNextDay" },
-      { label: "Get up and look out of the window", next: "dayStormWindow" }
+      { label: "Mantak burura arte igo", next: "dayStormShutters" },
+      { label: "Jaiki eta leihotik begiratu", next: "dayStormWindow" }
     ]
   },
   dayStormWindow: {
     image: "stormNight",
-    text: "Snow is flying sideways past the glass. Far away, high on the mountain, a tiny warm light is glowing in the dark. As you watch, it flickers... flickers... and goes out.",
-    choices: [{ label: "Go back to bed", next: "dayNextDay" }]
+    text: "Sudurra kristal hotzaren kontra jartzen duzu. Elurra alboka dabil hegan leihoaren aurretik. Urrun, mendian goian, argi txiki eta bero bat dago distiraka ilunpetan.\n\nBegira zaudela, dir-dir egiten du... dir-dir... eta itzali egiten da.",
+    choices: [{ label: "Ohera itzuli", next: "dayNextDay" }]
+  },
+  dayStormShutters: {
+    image: "stormNight",
+    effect: { flag: "stormShutters" },
+    text: "Alferrik da. DANBA! Haizeak kontraleihoak zabal-zabalik irekitzen ditu, eta elurra zurrunbiloan sartzen da gelara. Ohetik salto egiten duzu ixteko... eta orduan ikusten duzu. Urrun, mendian goian, argi txiki eta bero bat dago distiraka ilunpetan.\n\nBegira zaudela, dir-dir egiten du... dir-dir... eta itzali egiten da.",
+    choices: [{ label: "Leihoa itxi eta ohera itzuli", next: "dayNextDay" }]
   },
   dayNextDay: {
     type: "interstitial",
-    text: "The next morning...",
+    text: "Abenduaren 24a",
     next: "dayBored",
-    hold: 2200
+    hold: 3500
   },
   dayBored: {
     image: "baserriInside",
@@ -596,67 +591,67 @@ const story = {
     choices: [
       { label: "Kanpora joan, elurrarekin jolastera", next: "dayOutside" },
       { label: "Ganbarara igo, gurasoak konturatu aurretik", next: "dayAttic" },
-      { label: "Go and find amona in the kitchen", next: "dayKitchen" }
+      { label: "Joan amonaren bila sukaldera", next: "dayKitchen" }
     ]
   },
   dayAttic: {
     image: "attic",
     text: "Hau bai leku bitxia, nik uste mila urte pasa direla norbaitek hau garbitu zuenetik. Traste zaharrez beteta eta nik ezin ezer ikusi. ",
     choices: [
-      { label: "Switch on your torch", when: s => s.items.torch, next: "dayAtticTorch" },
-      { label: "Feel your way forward in the dark", next: "dayAtticDark" },
-      { label: "Give up and go back down", next: "dayParents" }
+      { label: "Linterna piztu", when: s => s.items.torch, next: "dayAtticTorch" },
+      { label: "Ilunpetan aurrera egin, eskuak aurrean", next: "dayAtticDark" },
+      { label: "Etsi eta behera jaitsi", next: "dayParents" }
     ]
   },
   dayAtticTorch: {
     image: "attic",
-    text: "In the torch beam: a big wooden chest carved with a sun, a baby's cradle, a stack of old baskets — and nailed to a beam, a dried flower like a spiky silver sun.",
-    choices: [{ label: "Take a closer look at the flower", next: "dayAtticFlower" }]
+    text: "Linternaren argitan: eguzki bat zizelkatuta duen egurrezko kutxa handi bat, haur-sehaska bat, saski zaharren pila bat... eta habe batean iltzatuta, eguzki zilarrezko eta arantzatsu baten antzeko lore lehor bat.",
+    choices: [{ label: "Lorea hurbilagotik begiratu", next: "dayAtticFlower" }]
   },
   dayAtticDark: {
     image: "attic",
-    text: "You shuffle forward with your hands out... and touch something dry and prickly, like a hedgehog made of paper. You carry it over to the little window to see what it is.",
-    choices: [{ label: "Look at it in the light", next: "dayAtticFlower" }]
+    text: "Aurrera zoaz herrestan, eskuak luzatuta... eta zerbait lehor eta zorrotza ukitzen duzu, paperezko triku bat bezala. Leiho txikira eramaten duzu, zer den ikusteko.",
+    choices: [{ label: "Argitan begiratu", next: "dayAtticFlower" }]
   },
   dayAtticFlower: {
     image: "eguzkilore",
-    text: "It's a dried flower as big as your hand, silver and spiky, like a little sun. There's a label tied to it, in old handwriting: “eguzkilore”.",
+    text: "Esku bat bezain handia den lore lehor bat da, zilarrezkoa eta arantzatsua, eguzki txiki bat bezala. Etiketa bat dauka lotuta, letra zaharrez idatzita: “eguzkilore”.",
     choices: [
-      { label: "Put it in your pocket", next: "dayParents", effect: { item: "eguzkilore" } },
-      { label: "Leave it where it was", next: "dayParents" }
+      { label: "Poltsikoan sartu", next: "dayParents", effect: { item: "eguzkilore" } },
+      { label: "Zegoen tokian utzi", next: "dayParents" }
     ]
   },
   dayKitchen: {
     image: "kitchen",
-    text: "Amona is at the stove, patting out talo — round, flat corn breads — and cooking them on a hot iron. “Bored already?” she laughs. Beside the back door hangs a dried, spiky flower.",
+    text: "Amona sukaldean dago, taloak egiten: arto-irinezko opil biribil eta lauak, burdina beroan erretzen. “Aspertuta dagoeneko?” dio barrez. Atzeko atearen ondoan, lore lehor eta arantzatsu bat dago zintzilik.",
     choices: [
-      { label: "Ask about the flower by the door", next: "dayKitchenFlower" },
-      { label: "Ask about Olentzero", next: "dayKitchenOlentzero" },
-      { label: "Go outside", next: "dayOutside" }
+      { label: "Galdetu atearen ondoko loreari buruz", next: "dayKitchenFlower" },
+      { label: "Galdetu Olentzerori buruz", next: "dayKitchenOlentzero" },
+      { label: "Kanpora joan", next: "dayOutside" }
     ]
   },
   dayKitchenFlower: {
     image: "eguzkilore",
-    text: "“That's an eguzkilore — a sun-flower. It keeps bad things out of the house. Any spirit that wants to come in has to count every one of its spiky petals first — and before they've finished, the sun comes up!” She winks. “There's a spare one on the windowsill, if you want it.”",
+    text: "“Hori eguzkilorea da, eguzkiaren lorea. Gauza txarrak etxetik kanpo mantentzen ditu. Barrura sartu nahi duen izpiritu orok bere petalo zorrotz guztiak zenbatu behar ditu lehenengo... eta amaitu baino lehen, eguzkia ateratzen da!” Begi-keinu bat egiten dizu. “Leihoaren ertzean badago beste bat, nahi baduzu.”",
     effect: { lore: "eguzkilore" },
     choices: [
-      { label: "Take the spare eguzkilore", next: "dayKitchenMore", effect: { item: "eguzkilore" } },
-      { label: "Leave it on the windowsill", next: "dayKitchenMore" }
+      { label: "Eguzkilore soberakoa hartu", next: "dayKitchenMore", effect: { item: "eguzkilore" } },
+      { label: "Leihoaren ertzean utzi", next: "dayKitchenMore" }
     ]
   },
   dayKitchenOlentzero: {
     image: "kitchen",
-    text: "“Olentzero? He's a charcoal-burner — an ikazkin. He lives up in the mountains all year round, making charcoal, and on Christmas Eve he comes down to the villages.” She looks out of the window at the white mountain. “Last night, in the storm, I could have sworn I saw his fire go out up there. Silly old woman.”",
+    text: "“Olentzero? Ikazkina da. Urte osoan mendian bizi da, ikatza egiten, eta Gabon gauean herrietara jaisten da.” Leihotik mendi zuriari begiratzen dio. “Bitxia. Bart, ekaitzean, argi bat itzaltzen ikusi nuen han goian. Neskatoa nintzenetik ikusi izan dut argi hori negu guztietan.”",
     effect: { lore: "olentzero" },
     choices: [{ label: "Jarraitu", next: "dayKitchenMore" }]
   },
   dayKitchenMore: {
     image: "kitchen",
-    text: "Amona flips another talo onto the plate. “Anything else? Or are you going outside to get some fresh air, like your parents told you?”",
+    text: "Amonak beste talo bat iraultzen du platerera. “Beste zerbait? Ala kanpora zoaz aire freskoa hartzera, gurasoek esan dizuten bezala?”",
     choices: [
-      { label: "Ask about the flower by the door", when: s => !s.lore.includes("eguzkilore"), next: "dayKitchenFlower" },
-      { label: "Ask about Olentzero", when: s => !s.lore.includes("olentzero"), next: "dayKitchenOlentzero" },
-      { label: "Go outside", next: "dayOutside" }
+      { label: "Galdetu atearen ondoko loreari buruz", when: s => !s.lore.includes("eguzkilore"), next: "dayKitchenFlower" },
+      { label: "Galdetu Olentzerori buruz", when: s => !s.lore.includes("olentzero"), next: "dayKitchenOlentzero" },
+      { label: "Kanpora joan", next: "dayOutside" }
     ]
   },
   dayParents: {
@@ -668,32 +663,32 @@ const story = {
     image: "basoa",
     text: "A zer nolako hotza. Zihurrenik elurra ere izoztua dagoela panpina egiteko. Ea basoan adar batzuk aurkitzen ditudan. Pixkat bat iluna dirudi, halabaina...",
     choices: [
-      { label: "First, see what aitona is doing by the woodshed", next: "dayAitonaLog" },
-      { label: "Go into the forest to look for branches", next: "introMeetMariDomingi" }
+      { label: "Lehenengo, ikusi zertan ari den aitona egur-tegiaren ondoan", next: "dayAitonaLog" },
+      { label: "Basora joan adar bila", next: "introMeetMariDomingi" }
     ]
   },
   dayAitonaLog: {
     image: "aitonaLog",
-    text: "Aitona is wrestling with a huge, knobbly log, half buried in the snow. “This,” he puffs, “is our Gabon-subila. Our Christmas log. Tonight it goes on the fire and burns all night long, to keep the house safe — and everyone in it. Your great-great-grandparents did exactly the same.”",
+    text: "Aitona enbor erraldoi eta korapilatsu batekin borrokan ari da, erdi elurpean. “Hau”, dio arnasestuka, “gure Gabon-subila da. Gure Gabonetako enborra. Gaur gauean sutara joango da eta gau osoan erreko da, etxea eta barruan dauden guztiak babesteko. Zure aitona-amonen aitona-amonek ere berdin egiten zuten.”",
     choices: [
-      { label: "Help him drag it to the house", next: "dayAitonaHelp" },
-      { label: "Throw a snowball at him", next: "dayAitonaSnowball" },
-      { label: "Leave him to it and go into the forest", next: "introMeetMariDomingi" }
+      { label: "Lagundu enborra etxera eramaten", next: "dayAitonaHelp" },
+      { label: "Elur-bola bat bota", next: "dayAitonaSnowball" },
+      { label: "Bere lanean utzi eta basora joan", next: "introMeetMariDomingi" }
     ]
   },
   dayAitonaSnowball: {
     image: "aitonaLog",
-    text: "It hits him right on the txapela. For a moment he just stands there with snow dripping off his nose — then he roars with laughter and throws one back, much harder. Then he goes back to his log, puffing.",
+    text: "Txapelaren erdi-erdian ematen dio. Une batez geldi geratzen da, elurra sudurretik behera tantaka... eta orduan barre algaraka hasten da eta beste bat botatzen dizu, askoz gogorrago. Gero bere enborrera itzultzen da, puzka.",
     choices: [
-      { label: "Help him drag the log to the house", next: "dayAitonaHelp" },
-      { label: "Go into the forest", next: "introMeetMariDomingi" }
+      { label: "Lagundu enborra etxera eramaten", next: "dayAitonaHelp" },
+      { label: "Basora joan", next: "introMeetMariDomingi" }
     ]
   },
   dayAitonaHelp: {
     image: "aitonaLog",
-    text: "Together you heave and pull and slip and heave again, until the great log is safe by the door. “Ha! Strong as an ox,” says aitona. “Now go and play — but don't go too far into the trees. It'll be dark soon.”",
+    text: "Elkarrekin, bultza eta tira, irristatu eta berriro bultza, enbor handia atearen ondoan seguru egon arte. “Ha! Idia bezain indartsua”, dio aitonak. “Orain, zoaz jolastera, baina ez sartu gehiegi zuhaitzen artean. Laster ilunduko du.”",
     effect: { kind: "log", lore: "subila" },
-    choices: [{ label: "Go into the forest", next: "introMeetMariDomingi" }]
+    choices: [{ label: "Basora joan", next: "introMeetMariDomingi" }]
   },
   introMeetMariDomingi: {
     image: "maridomingi",
@@ -704,6 +699,47 @@ const story = {
   introSendOff: {
     image: "maridomingi",
     text: "\u201c{name} — entzun: Olentzeroren sua... nola esan... su berezi bat da. Gabonetarako behar dugu baino ekaitzarekin itzali egin da. \u201d",
+    choices: [
+      { label: "“Nik ikusi nuen! Bart, argi bat itzali zen mendian.”", next: "mdSawIt" },
+      { label: "Ezer ez esan", next: "mdSawItQuiet" }
+    ]
+  },
+  mdSawIt: {
+    image: "maridomingi",
+    text: "Mari Domingik begiak zabal-zabalik jartzen ditu. “Ikusi zenuen? Ia inork ez du gure sua inoiz ikusten. Zure aitona-amonen aitona-amonak jaio baino lehenagotik dago han goian piztuta.” Erorita dagoen enbor baten gainean esertzen da, nekatuta. “Utzi kontatzen zer gertatu zen.”",
+    choices: NEXT("mdStorm1")
+  },
+  mdSawItQuiet: {
+    image: "maridomingi",
+    text: "Mari Domingik arretaz begiratzen dizu. “Ikusi zenuen, ezta? Bart, ekaitzean. Argi txiki bat mendian goian, itzaltzen.” Poliki egiten duzu baietz buruarekin. “Ia inork ez du gure sua inoiz ikusten.” Erorita dagoen enbor baten gainean esertzen da, nekatuta. “Utzi kontatzen zer gertatu zen.”",
+    choices: NEXT("mdStorm1")
+  },
+
+  // ===================== MARI DOMINGI'S FLASHBACK: THE STORM =====================
+  // This used to be the end of the prologue. It's told by Mari Domingi now, so the child
+  // learns what happened from someone it happened to. The old Basque narration is kept in
+  // comments below each slide, to rework into her voice.
+  mdStorm1: {
+    image: "coldNight",
+    // Old prologue text: "Baino etengabeko ekaitzak sua bere azkenetan du. Olentzero eta Mari Domingi
+    // etengabe dabiltza etxea babesten, haize hotza etxetik at mantentzeko, betirako sua itzal ez dadin"
+    text: "“Ekaitza gauean iritsi zen. Orduak eman zituen gure etxearen inguruan orroka, eta sua gero eta txikiagoa zen. Zirrikitu guztiak zapiz bete genituen. Olentzero sutondoan eseri zen, su-garrak bere bizkarraz babesten.”",
+    choices: NEXT("mdStorm2")
+  },
+  mdStorm2: {
+    image: "windBursts",
+    // Old prologue text: "Baina haize bolada batek ate eta leihoak ireki ditu, bultzada batez. Elurra dabil
+    // etxe guztitik bueltaka. 'Mari Domingi! Betirako sua... ' dio Olentzerok."
+    text: s => "“Orduan, haize-bolada batek, bakar batek, ate eta leiho guztiak ireki zituen batera." +
+      (s.flags.stormShutters ? " Zure kontraleihoak ireki zituen bolada bera izango zen, seguru asko." : "") +
+      " Elurra nonahi, tailer osoan, opari guztien gainean. Olentzero nire izena oihuka entzun nuen: ‘Mari Domingi! Sua!’”",
+    choices: NEXT("mdStorm3")
+  },
+  mdStorm3: {
+    image: "fireDies",
+    // Old prologue text: 'Baina berandu da. Ekaitza gailendu da etxean. Itzali da sua. "Olentzero... Berehala
+    // konpondu behar dugu hau, bestela gabon gaua, opariak... Ez digu denbora emango"'
+    text: "“Ateak berriro itxi genituenerako, berandu zen. Sua itzalita zegoen. Lehen aldiz, inoiz: errauts hotz eta grisa besterik ez.” Bere eskuei begira geratzen da. “Hura gabe, Olentzerok ezin du gauean zehar lanean jarraitu.”",
     choices: NEXT("mdQuestions")
   },
 
@@ -711,44 +747,44 @@ const story = {
   // Questions the child can ask in any order. "Set off" only appears once they've heard the plan.
   mdQuestions: {
     image: "maridomingi",
-    text: "Mari Domingi takes both your hands. Hers are as cold as snow. “Tonight is Christmas Eve. If the fire isn't burning again by tonight, Olentzero can't finish the presents. Not for anyone.”",
+    text: "Mari Domingik zure bi eskuak hartzen ditu. Bereak elurra bezain hotzak dira. “Gaur Gabon gaua da. Sua gaur gauerako berriro piztuta ez badago, Olentzerok ezin izango ditu opariak amaitu. Inorentzat ere ez.”",
     choices: s => MD_QUESTIONS
   },
   mdAsk: {
     image: "maridomingi",
-    text: "Mari Domingi waits, rubbing her hands to keep warm. “What else?”",
+    text: "Mari Domingi zain dago, eskuak igurtziz berotzeko. “Zer gehiago?”",
     choices: s => MD_QUESTIONS
   },
   mdMatches: {
     image: "maridomingi",
     effect: { flag: "mdMatches" },
-    text: "“Ha! If only. That fire was lit by Sugaar himself, the fire serpent of the mountains, long, long ago. Only Sugaar can light it again. And Sugaar doesn't listen to anybody... except the Lady. Mari. She lives up in the mountains, in the caves.”",
+    text: "“Ha! Hori ahal bagenu! Su hori Sugaarrek berak piztu zuen, mendietako suzko sugeak, aspaldi-aspaldi. Sugaarrek bakarrik piztu dezake berriro. Eta Sugaarrek ez dio inori kasurik egiten... Damari izan ezik. Mariri. Mendian bizi da, kobazuloetan.”",
     choices: NEXT("mdAsk")
   },
   mdWho: {
     image: "maridomingi",
     effect: { flag: "mdWho" },
-    text: "“I'm Mari Domingi. I help Olentzero with... well, with everything.” She smiles for the first time. “He'd be lost without me. Don't tell him I said so.”",
+    text: "“Mari Domingi naiz. Olentzerori laguntzen diot... tira, denetan.” Lehen aldiz egiten du irribarre. “Ni gabe galduta egongo litzateke. Ez esan nik esan dudanik.”",
     choices: NEXT("mdAsk")
   },
   mdWhy: {
     image: "maridomingi",
     effect: { flag: "mdWhy" },
-    text: "“Because the forest folk don't talk to grown-ups any more. Grown-ups are too busy, and too sure of themselves. But a child...” She shrugs. “And because you were the one who walked into the woods.”",
+    text: "“Basoko jendeak ez diolako helduei hitz egiten jada. Helduak lanpetuegi daude, eta seguruegi. Baina haur bat...” Sorbaldak altxatzen ditu. “Eta gure sua itzaltzen ikusi zenuelako. Ia inor ez da konturatzen. Zu bai.”",
     choices: NEXT("mdAsk")
   },
   mdPlan: {
     image: "maridomingi",
     effect: { flag: "mdPlan" },
-    text: "“The Lady only listens to people she thinks are worthy. And nobody knows where she is tonight — she moves between her mountains. But the forest folk know her ways: Basajaun in the deep forest, Atarrabi on the hermitage hill, the sorginak up in the high meadow. Help them. Listen to them. And be kind to anyone you meet on the way. When the Lady is ready to see you — you'll know.”",
+    text: "“Damak duin iruditzen zaizkionei bakarrik egiten die kasu. Eta inork ez daki non dagoen gaur gauean: mendi batetik bestera ibiltzen da. Baina basoko jendeak ezagutzen ditu bere ohiturak: Basajauna baso sakonean, Atarrabi ermitako muinoan, sorginak goiko larrean. Lagundu iezaiezu. Entzun iezaiezu. Eta izan atsegina bidean topatzen duzun edonorekin. Dama zu ikusteko prest dagoenean... jakingo duzu.”",
     choices: [
-      { label: "Set off", next: "clearingFirst" },
-      { label: "Ask something else first", next: "mdAsk" }
+      { label: "Bidean abiatu", next: "clearingFirst" },
+      { label: "Lehenago beste zerbait galdetu", next: "mdAsk" }
     ]
   },
   clearingFirst: {
     image: "mapScene",
-    text: "Mari Domingi leads you to a wide clearing, kneels, and lights a little fire of twigs. “Not a real fire — not like ours. But it'll keep me warm while I wait for you.”\n\nPaths lead off between the trees in every direction.",
+    text: "Mari Domingik soilgune zabal batera eramaten zaitu, belauniko jartzen da eta adaxkaz su txiki bat pizten du. “Ez da benetako sua, ez gurea bezalakoa. Baina berotuta mantenduko nau zure zain nagoen bitartean.”\n\nBideak abiatzen dira zuhaitzen artetik, norabide guztietan.",
     choices: NEXT("map")
   },
 
@@ -757,37 +793,37 @@ const story = {
   map: {
     image: "mapScene",
     text: s => {
-      if (s.mari.revealed && s.mari.fails) return `You're back in the clearing. Mari Domingi's little fire crackles. Far away, a faint glow hangs over ${peak(s).name}, where the Lady's fire flew.`;
-      if (s.mari.revealed) return "You're back in the clearing. Mari Domingi's little fire crackles. Over the peak of Anboto, a cloud is glowing faintly: the Lady is at home.";
-      return "You're in the clearing. Mari Domingi's little fire crackles, and paths lead off between the trees.";
+      if (s.mari.revealed && s.mari.fails) return `Soilgunera itzuli zara. Mari Domingiren su txikiak txinpartak botatzen ditu. Urrun, distira ahul bat dago ${peak(s).name} mendiaren gainean, Damaren sua hegan joan zen tokian.`;
+      if (s.mari.revealed) return "Soilgunera itzuli zara. Mari Domingiren su txikiak txinpartak botatzen ditu. Anboto gainean, hodei batek distira ahula du: Dama etxean dago.";
+      return "Soilgunean zaude. Mari Domingiren su txikiak txinpartak botatzen ditu, eta bideak abiatzen dira zuhaitzen artetik.";
     },
-    prompt: "Where will you go, {name}?",
+    prompt: "Nora joango zara, {name}?",
     choices: s => LOCATIONS
   },
   mdHub: {
     image: "maridomingi",
     text: s => {
       const say = [];
-      if (s.flags.galtzaWood) say.push("“Somebody sent me a mountain of firewood, carried by dozens of little men in red trousers. I wonder who.” She winks.");
-      if (s.mari.revealed && s.mari.fails) say.push(`“Don't lose heart. The Lady moves between her mountains — you saw her fire go to ${peak(s).name}. Go and try again, and think hard about what went wrong.”`);
-      else if (s.mari.revealed) say.push(`“The Lady is waiting for you on ${peak(s).name}. Remember everything you've been taught.”`);
-      else if (mainDone(s) === 0) say.push("“Basajaun in the deep forest, Atarrabi up on the hermitage hill, the sorginak in the high meadow. Start with whichever you like.”");
-      else say.push("“You're doing well. The Lady sees everything — every kindness too. Keep going.”");
+      if (s.flags.galtzaWood) say.push("“Norbaitek egur-mendi oso bat bidali dit, galtza gorridun gizontxo dozenaka batzuek ekarria. Nor ote da?” Begi-keinu bat egiten dizu.");
+      if (s.mari.revealed && s.mari.fails) say.push(`“Ez etsi. Dama mendi batetik bestera ibiltzen da: ikusi zenuen bere sua ${peak(s).name} aldera joaten. Zoaz berriro saiatzera, eta pentsatu ondo zerk huts egin zuen.”`);
+      else if (s.mari.revealed) say.push(`“Dama zure zain dago ${peak(s).name} mendian. Gogoratu irakatsi dizuten guztia.”`);
+      else if (mainDone(s) === 0) say.push("“Basajauna baso sakonean, Atarrabi ermitako muinoan, sorginak goiko larrean. Hasi nahi duzunarekin.”");
+      else say.push("“Ondo zoaz. Damak dena ikusten du, baita atsegintasun bakoitza ere. Jarraitu.”");
       const missing = FACT_ORDER.length - s.facts.length;
-      if (missing > 0 && (mainDone(s) > 0 || s.mari.revealed)) say.push("“You still don't know everything about how to behave in front of her. Someone out there could tell you.”");
-      if (Object.values(s.quests).includes("declined")) say.push("“And it's never too late to go back to someone you walked away from.”");
-      return "Mari Domingi looks up from her little fire.\n\n" + say.join("\n\n");
+      if (missing > 0 && (mainDone(s) > 0 || s.mari.revealed)) say.push("“Oraindik ez dakizu dena, bere aurrean nola portatu behar den. Norbaitek esan diezazuke, hor kanpoan.”");
+      if (Object.values(s.quests).includes("declined")) say.push("“Eta inoiz ez da berandu bizkarra eman zenion norbaitengana itzultzeko.”");
+      return "Mari Domingik bere su txikitik begiak altxatzen ditu.\n\n" + say.join("\n\n");
     },
     choices: [
-      { label: "Ask what the Lady is like", when: s => !s.lore.includes("mari"), next: "mdLady" },
-      { label: "Back to the paths", next: "map" }
+      { label: "Galdetu nolakoa den Dama", when: s => !s.lore.includes("mari"), next: "mdLady" },
+      { label: "Bideetara itzuli", next: "map" }
     ]
   },
   mdLady: {
     image: "maridomingi",
     effect: { lore: "mari" },
-    text: "“Mari? She's older than the mountains. She lives in caves high up on the peaks — Anboto, Txindoki, Aizkorri — and flies between them as a ball of fire. She can't abide lies, or boasting, or people who break their word. But she's fair. Always fair.”",
-    choices: [{ label: "Back to the paths", next: "map" }]
+    text: "“Mari? Mendiak baino zaharragoa da. Tontorretako kobazuloetan bizi da — Anboton, Txindokin, Aizkorrin — eta haien artean hegan ibiltzen da, su-bola bat bezala. Ezin ditu jasan gezurrak, harrokeria, ezta hitza betetzen ez dutenak ere. Baina zuzena da. Beti zuzena.”",
+    choices: [{ label: "Bideetara itzuli", next: "map" }]
   },
 
   // Mari shows herself the first time the child comes back to the clearing with enough favour
@@ -795,123 +831,123 @@ const story = {
   mariReveal: {
     image: "fireball",
     effect: { mariReveal: true, lore: "mari" },
-    text: "As you come back into the clearing, Mari Domingi grabs your arm and points at the sky. A ball of fire is sailing slowly over the treetops, trailing sparks, towards the dark peak of Anboto. A cloud settles over the summit like a hat.\n\n“That's her,” Mari Domingi breathes. “The Lady, going home. When Anboto wears its cloud, she's in. You've done it, {name}. She's ready to see you.”",
+    text: "Soilgunera itzultzean, Mari Domingik besotik heltzen dizu eta zerura seinalatzen du. Su-bola bat ari da poliki hegan zuhaitz gainetik, txinpartak atzean utziz, Anbotoko tontor ilunerantz. Hodei bat jartzen zaio tontorrari, txapela bat bezala.\n\n“Bera da”, dio Mari Domingik ahopeka. “Dama, etxera bidean. Anbotok hodeia duenean, etxean dago. Lortu duzu, {name}. Zu ikusteko prest dago.”",
     choices: NEXT("mariReveal2")
   },
   mariReveal2: {
     image: "maridomingi",
-    text: "“Before you go, think about everything they taught you. How to speak to her. How to stand. How to leave. The Lady forgives a lot of things — but not bad manners in her own house.”",
-    choices: [{ label: "Back to the clearing", next: "map" }]
+    text: "“Joan aurretik, pentsatu irakatsi dizuten guztian. Nola hitz egin berari. Nola egon. Nola alde egin. Damak gauza asko barkatzen ditu, baina ez bere etxean heziera txarra.”",
+    choices: [{ label: "Soilgunera itzuli", next: "map" }]
   },
 
   // ===================== BASAJAUN (main quest: patience and respect) =====================
   basajaunStart: {
     image: "forestDay",
-    text: "You follow the old path deeper into the woods, until the trees close in around you. The snow here is deep and untouched. Almost.",
+    text: "Bide zaharrari jarraitzen diozu basoan barrena, zuhaitzak zure inguruan itxi arte. Elurra sakona eta ukitu gabea da hemen. Ia.",
     choices: [
-      { label: "Look closer at the snow", when: s => s.quests.basajaun !== "resolved", next: "basajaunTracks" },
-      { label: "Visit Basajaun by his fire", when: s => s.quests.basajaun === "resolved", next: "basajaunRevisit" },
-      { label: "Take the narrow path towards the sound of sheep bells", next: "hutPath" },
+      { label: "Elurrari hurbilagotik begiratu", when: s => s.quests.basajaun !== "resolved", next: "basajaunTracks" },
+      { label: "Joan Basajaunarengana, bere sutondora", when: s => s.quests.basajaun === "resolved", next: "basajaunRevisit" },
+      { label: "Hartu ardi-joalen hotsera doan bidezidorra", next: "hutPath" },
       TO_CLEARING
     ]
   },
   basajaunTracks: {
     image: "tracks",
     effect: { lore: "basajaun" },
-    text: s => "Footprints. Enormous ones. One is like a person's bare foot, only three times bigger. The other is perfectly round, like the end of a log. Left, round, left, round — they lead off between the trees." +
-      (s.items.torch ? "\n\nYou switch on your torch. In the beam, the tracks look very fresh." : ""),
+    text: s => "Oinatzak. Erraldoiak. Bata pertsona baten oin hutsa bezalakoa da, baina hiru aldiz handiagoa. Bestea guztiz biribila, enbor baten muturra bezala. Ezkerra, biribila, ezkerra, biribila... zuhaitzen artean barrena doaz." +
+      (s.items.torch ? "\n\nLinterna pizten duzu. Argitan, oinatzak oso berriak dirudite." : ""),
     choices: [
-      { label: "Follow the strange tracks", next: s => s.flags.robinSeen ? "basajaunMeet" : "basajaunRobin" },
-      { label: "Go back to the clearing — quickly", next: "map" }
+      { label: "Oinatz bitxiei jarraitu", next: s => s.flags.robinSeen ? "basajaunMeet" : "basajaunRobin" },
+      { label: "Soilgunera itzuli, azkar", next: "map" }
     ]
   },
   basajaunRobin: {
     image: "robin",
     effect: { flag: "robinSeen" },
-    text: "Beside the tracks, a little robin is caught in a bramble, flapping and flapping, its feathers full of snow.",
+    text: "Oinatzen ondoan, txantxangorri txiki bat sasi batean harrapatuta dago, hegoak astinduz eta astinduz, lumak elurrez beteta.",
     choices: [
-      { label: "Carefully free it", next: "basajaunRobinFreed" },
-      { label: "Leave it — you're in a hurry", next: "basajaunMeet" }
+      { label: "Kontu handiz askatu", next: "basajaunRobinFreed" },
+      { label: "Utzi, presaka zabiltza eta", next: "basajaunMeet" }
     ]
   },
   basajaunRobinFreed: {
     image: "robin",
     effect: { kind: "robin" },
-    text: "You untangle the thorns one by one. The robin hops onto your glove, shakes the snow off its wings — and flies away along the line of the tracks, as if it were showing you the way.",
-    choices: [{ label: "Follow the robin and the tracks", next: "basajaunMeet" }]
+    text: "Arantzak banan-banan askatzen dituzu. Txantxangorriak zure eskularruaren gainera egiten du salto, elurra hegoetatik astintzen du... eta hegan joaten da oinatzen ildoan, bidea erakutsiko balizu bezala.",
+    choices: [{ label: "Txantxangorriari eta oinatzei jarraitu", next: "basajaunMeet" }]
   },
   basajaunMeet: {
     image: "basajaun",
-    text: "Basajaun looked at you, surprised — he wasn't expecting anyone here. “What are you doing here?” he says, taking a step closer.",
-    narration: "The undergrowth had gone still. Then, between the dark trunks, something moved — tall as the trees themselves, hair falling past his knees like moss over old stone. Basajaun, Lord of the Forest, had not expected anyone this deep in his woods. “What are you doing here?” he rumbled, low as distant thunder, and took one slow step closer.",
+    text: "Basajaunak harrituta begiratzen dizu: ez zuen inor espero hemen. “Zer egiten duzu hemen?” dio, pauso bat hurbilduz.",
+    narration: "Sastrakak isildu egin ziren. Orduan, enbor ilunen artean, zerbait mugitu zen: zuhaitzak bezain garaia, ilea belaunetatik behera, harri zaharraren gaineko goroldioa bezala. Basajaunak, basoko jaunak, ez zuen inor espero bere basoaren barru-barruan. “Zer egiten duzu hemen?” esan zuen, urruneko ortzantza bezain ahots baxuz, eta pauso bat eman zuen poliki, hurbilago.",
     choices: [
-      { label: "Run away and say nothing", next: "basajaunRanAway", effect: { decline: "basajaun" } },
-      { label: "Shout for help", next: "basajaunShout" },
-      { label: "“Sorry — I didn't mean to disturb you.” Stay, respectfully.", next: "basajaunStayed" }
+      { label: "Ihes egin, ezer esan gabe", next: "basajaunRanAway", effect: { decline: "basajaun" } },
+      { label: "Laguntza eske oihu egin", next: "basajaunShout" },
+      { label: "“Barkatu, ez nuen molestatu nahi.” Geratu, errespetuz.", next: "basajaunStayed" }
     ]
   },
   basajaunShout: {
     image: "basajaun",
-    text: "Your voice bounces off the trees and is swallowed by the snow. Nobody comes. Basajaun tilts his huge head. “Why shout? I have not hurt you.”",
+    text: "Zure ahotsak zuhaitzetan egiten du errebote, eta elurrak irentsi egiten du. Ez dator inor. Basajaunak bere buru erraldoia makurtzen du. “Zergatik oihu? Ez dizut minik egin.”",
     choices: [
-      { label: "Run away", next: "basajaunRanAway", effect: { decline: "basajaun" } },
-      { label: "“Sorry. I was scared.” Stay where you are.", next: "basajaunStayed" }
+      { label: "Ihes egin", next: "basajaunRanAway", effect: { decline: "basajaun" } },
+      { label: "“Barkatu. Beldurtuta nengoen.” Geratu zauden tokian.", next: "basajaunStayed" }
     ]
   },
   basajaunRanAway: {
     image: "forestDay",
-    text: "You turn and run. Behind you, only silence. Whatever Basajaun might have told you, you'll have to learn some other way — or come back another time.",
+    text: "Buelta eman eta korrika zoaz. Atzean, isiltasuna besterik ez. Basajaunak esango zizuna beste nonbait ikasi beharko duzu... edo beste batean itzuli.",
     choices: [TO_CLEARING]
   },
   basajaunStayed: {
     image: "fireside",
-    text: "Basajaun studies you a moment longer, then something in his face eases. “Not many stay,” he says. “Come. Sit by my fire.”",
-    narration: "For a long moment neither of you moved. Then, slowly, something in the giant's face eased — the way a held breath finally lets go. “Not many stay,” he said, quieter now. “Come. Sit by my fire.”",
+    text: "Basajaunak beste une batez aztertzen zaitu, eta orduan zerbait lasaitzen zaio aurpegian. “Gutxi geratzen dira”, dio. “Zatoz. Eseri nire sutondoan.”",
+    narration: "Une luze batez, zuetako inor ez zen mugitu. Orduan, poliki, zerbait lasaitu zitzaion erraldoiari aurpegian, eutsitako arnasa azkenean askatzen denean bezala. “Gutxi geratzen dira”, esan zuen, orain isilago. “Zatoz. Eseri nire sutondoan.”",
     choices: NEXT("basajaunFire")
   },
   basajaunFire: {
     image: "fireside",
-    text: "You sit by his fire. Basajaun lowers himself down on the other side, creaking like an old tree, and says nothing at all. He just watches the flames. And the snow. And you.\n\nThe silence goes on, and on, and on.",
+    text: "Bere sutondoan esertzen zara. Basajauna beste aldean esertzen da, zuhaitz zahar batek bezala karraska eginez, eta ez du ezer esaten. Garrei begiratzen die, besterik ez. Eta elurrari. Eta zuri.\n\nIsiltasunak jarraitzen du, eta jarraitzen, eta jarraitzen.",
     choices: s => BASAJAUN_FIRE_CHOICES
   },
   basajaunTooSoon: {
     image: "fireside",
-    text: "Basajaun grunts and turns his face away. “You people. Always in a hurry. The forest does not hurry.”\n\nHe goes quiet again.",
+    text: "Basajaunak marmar egiten du eta aurpegia alde batera biratzen du. “Zuek, gizakiok. Beti presaka. Basoak ez du presarik.”\n\nBerriro isiltzen da.",
     choices: s => BASAJAUN_FIRE_CHOICES.slice(1)
   },
   basajaunWait: {
     image: "fireside",
-    text: "You wait. The fire pops. Far away, an owl calls. Snow slides off a branch with a soft thump. You wait some more.\n\nAt last, Basajaun speaks. “The shepherds leave me bread. When the wolves or a storm are coming, I howl from the mountain to warn them. That is our bargain.” He looks at you. “You waited. Few of your kind do. Now — why are you here?”",
+    text: "Itxaron egiten duzu. Suak kraska egiten du. Urrun, hontz batek kantatzen du. Elurra adar batetik erortzen da, danba leun batekin. Gehiago itxaroten duzu.\n\nAzkenean, Basajaunak hitz egiten du. “Artzainek ogia uzten didate. Otsoak edo ekaitza datozenean, menditik oihu egiten dut haiei abisatzeko. Hori da gure tratua.” Begiratu egiten dizu. “Itxaron egin duzu. Zuetako gutxik egiten dute. Orain, zergatik zaude hemen?”",
     choices: NEXT("basajaunTell")
   },
   basajaunBread: {
     image: "fireside",
-    text: "You hold out the bread. Basajaun's eyebrows rise. He takes it delicately between two huge fingers and sniffs it. “Joanes' bread,” he rumbles. “So you know the old bargain: bread for the forest, and I keep watch over the flocks.” He eats it in one bite. “Now — why are you here?”",
+    text: "Ogia luzatzen diozu. Basajaunak bekainak altxatzen ditu. Kontu handiz hartzen du bi hatz erraldoiren artean, eta usaindu egiten du. “Joanesen ogia”, dio marmarka. “Beraz, badakizu antzinako tratua: ogia basoarentzat, eta nik artaldeak zaintzen ditut.” Ahokada bakar batean jaten du. “Orain, zergatik zaude hemen?”",
     choices: NEXT("basajaunTell")
   },
   basajaunSweets: {
     image: "fireside",
-    text: "He sniffs the sweets suspiciously — then tips the whole bag into his mouth, paper and all. His eyes go wide. For the first time, he laughs: a sound like rocks rolling down a mountain. “Strange food. Good food. Now — why are you here?”",
+    text: "Gozokiak susmo txarrez usaintzen ditu... eta orduan poltsa osoa ahora husten du, paper eta guzti. Begiak zabal-zabalik jartzen zaizkio. Lehen aldiz, barre egiten du: mendian behera amiltzen diren harrien hotsa. “Janari bitxia. Janari ona. Orain, zergatik zaude hemen?”",
     choices: NEXT("basajaunTell")
   },
   basajaunLeave: {
     image: "forestDay",
-    text: "You get up and walk away. Behind you, Basajaun says nothing at all. Maybe another time.",
+    text: "Altxatu eta alde egiten duzu. Atzean, Basajaunak ez du ezer esaten. Beste batean, agian.",
     choices: [TO_CLEARING]
   },
   basajaunTell: {
     image: "fireside",
-    text: "You tell him about the storm, and Olentzero's fire, and Mari Domingi. Basajaun listens, nodding slowly. “Only Sugaar could light a fire like that again. And only the Lady can ask Sugaar for anything.”",
+    text: "Ekaitzaz, Olentzeroren suaz eta Mari Domingiz hitz egiten diozu. Basajaunak entzun egiten du, buruarekin poliki baietz eginez. “Sugaarrek bakarrik piztu lezake berriro horrelako su bat. Eta Damak bakarrik eska diezaioke ezer Sugaarri.”",
     choices: [
-      { label: "Ask how he knows so much", next: "basajaunSaw" },
-      { label: "Ask him about the Lady", next: "basajaunHint" }
+      { label: "Galdetu nola dakien hainbeste", next: "basajaunSaw" },
+      { label: "Galdetu Damari buruz", next: "basajaunHint" }
     ]
   },
   basajaunSaw: {
     image: "fireside",
     effect: { lore: "saw" },
-    text: "“My people knew many things before yours did. How to sow wheat. How to make a saw. A clever little man called Martin tricked those secrets out of us, long ago — he copied the saw from the edge of a chestnut leaf.” He almost smiles. “We were very angry. Now... I think it is good that people have saws.”",
-    choices: [{ label: "Ask him about the Lady", next: "basajaunHint" }]
+    text: "“Nire herriak gauza asko zekizkien zureak baino lehen. Garia nola erein. Zerra nola egin. Martin izeneko gizontxo azkar batek sekretu horiek kendu zizkigun engainuz, aspaldi: gaztainondoaren hostoaren ertzetik kopiatu zuen zerra.” Ia irribarre egiten du. “Oso haserre jarri ginen. Orain... ondo dagoela uste dut, jendeak zerrak izatea.”",
+    choices: [{ label: "Galdetu Damari buruz", next: "basajaunHint" }]
   },
   basajaunHint: {
     image: "fireside",
@@ -921,7 +957,7 @@ const story = {
   },
   basajaunRevisit: {
     image: "fireside",
-    text: "Basajaun nods to you from beside his fire. “You already know what I know,” he says.",
+    text: "Basajaunak buruarekin agurtzen zaitu bere sutondotik. “Badakizu nik dakidana”, dio.",
     choices: [TO_CLEARING]
   },
 
@@ -929,39 +965,39 @@ const story = {
   hutPath: {
     image: "pasture",
     effect: { found: "hut" },
-    text: "The narrow path climbs out of the trees onto a high pasture. A little stone hut — a txabola — huddles against the hill with smoke curling from its roof. Nearby, huge flat stones lean together like a stone table. Someone is calling “Txo! Txo!”, and sheep bells are ringing all over the hillside.",
+    text: "Bidezidorra zuhaitzetatik irten eta goiko larre batera igotzen da. Harrizko etxola txiki bat, txabola bat, muinoaren kontra kokatuta dago, teilatutik kea dariola. Ondoan, harri lau erraldoiak elkarri eutsita daude, harrizko mahai bat bezala. Norbait “Txo! Txo!” oihuka ari da, eta ardi-joalak entzuten dira mendi-hegal osoan.",
     choices: [
-      { label: "Go to the hut", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
-      { label: "Look at the huge stones", when: s => !s.lore.includes("jentilak"), next: "jentilStones" },
-      { label: "Go back down to the forest path", next: "basajaunStart" },
+      { label: "Joan txabolara", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
+      { label: "Harri erraldoiei begiratu", when: s => !s.lore.includes("jentilak"), next: "jentilStones" },
+      { label: "Basoko bidera jaitsi", next: "basajaunStart" },
       TO_CLEARING
     ]
   },
   jentilStones: {
     image: "jentilarri",
     effect: { lore: "jentilak" },
-    text: "Up close, the stones are taller than a grown-up, with one enormous flat stone balanced across the top, like the roof of a tiny house. No person could ever have lifted that. The old people said the jentilak — the giants of the old times — put stones like these on the hills, and threw boulders from one mountain to another.",
+    text: "Hurbiletik, harriak heldu bat baino garaiagoak dira, eta gainean harri lau izugarri bat dute orekan, etxe txiki baten teilatua bezala. Ezein pertsonak ezin izango zuen hori altxatu. Zaharrek zioten jentilek, antzinako erraldoiek, jarri zituztela horrelako harriak muinoetan, eta mendi batetik bestera jaurtitzen zituztela harkaitzak.",
     choices: [
-      { label: "Go to the hut", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
+      { label: "Joan txabolara", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
       TO_CLEARING
     ]
   },
   joanesMeet: {
     image: "joanes",
-    text: "An old shepherd in a long cloak, his beard white with frost and his head bare, is trying to round up a scattered flock with a crooked stick. “The storm!” he says. “Blew my sheep all over the mountain — and my txapela with them. Three lambs still missing, and my old legs...” He peers at you. “You don't look much like a shepherd.”",
+    text: "Artzain zahar bat, kapa luzez jantzita, bizarra izotzez zuri eta burua bilutsik, sakabanatutako artaldea biltzen saiatzen ari da makila oker batekin. “Ekaitza!” dio. “Ardiak mendi osoan zehar sakabanatu dizkit... eta txapela ere eraman dit. Hiru bildots falta zaizkit oraindik, eta nire hanka zaharrak...” Begiak estutuz begiratzen dizu. “Ez duzu artzain itxura handirik.”",
     choices: [
-      { label: "Offer to help find the lambs", next: "lambsHub" },
-      { label: "Ask him about Basajaun", when: s => !s.flags.joanesTalk, next: "joanesTalk" },
-      { label: "Say sorry, you can't stop", next: "map" }
+      { label: "Bildotsak bilatzen laguntzea eskaini", next: "lambsHub" },
+      { label: "Galdetu Basajaunari buruz", when: s => !s.flags.joanesTalk, next: "joanesTalk" },
+      { label: "Barkatu, ezin zara gelditu", next: "map" }
     ]
   },
   joanesTalk: {
     image: "joanes",
     effect: { flag: "joanesTalk", lore: "basajaun" },
-    text: "“Basajaun? Best neighbour a shepherd ever had. When wolves or a storm are coming, he gives a great howl from the mountain and we bring the sheep in. Every night I leave him a piece of bread on the wall, and every morning it's gone.”",
+    text: "“Basajauna? Artzain batek izan dezakeen auzorik onena. Otsoak edo ekaitza datozenean, oihu handi bat egiten du menditik eta ardiak barrura sartzen ditugu. Gauero ogi puska bat uzten diot hormaren gainean, eta goizero desagertuta egoten da.”",
     choices: [
-      { label: "Offer to help find the lambs", next: "lambsHub" },
-      { label: "Say sorry, you can't stop", next: "map" }
+      { label: "Bildotsak bilatzen laguntzea eskaini", next: "lambsHub" },
+      { label: "Barkatu, ezin zara gelditu", next: "map" }
     ]
   },
   // Three lambs, found in any order.
@@ -969,41 +1005,41 @@ const story = {
     image: "pasture",
     text: s => {
       const n = ["lambStream", "lambRocks", "lambBramble"].filter(f => s.flags[f]).length;
-      if (n === 0) return "“Listen,” says Joanes. “Hear the bells?” Three little bells, far apart: one down by the frozen stream, one up among the rocks, one in the bramble patch.";
-      if (n === 3) return "That's all three! The lambs trot behind you, bells jingling.";
-      return `That's ${n === 1 ? "one" : "two"}. You stop and listen for the ${n === 1 ? "other bells" : "last bell"}.`;
+      if (n === 0) return "“Entzun”, dio Joanesek. “Entzuten dituzu joalak?” Hiru joal txiki, elkarrengandik urrun: bat behean, erreka izoztuaren ondoan; bestea goian, harkaitzen artean; eta beste bat sasitzan.";
+      if (n === 3) return "Hirurak! Bildotsak zure atzetik doaz trostan, joalak dilin-dalan.";
+      return `${n === 1 ? "Bat aurkitu duzu" : "Bi aurkitu dituzu"}. Gelditu eta ${n === 1 ? "beste joalei" : "azken joalari"} adi jartzen zara.`;
     },
     choices: [
-      { label: "Down by the frozen stream", when: s => !s.flags.lambStream, next: "lambStream" },
-      { label: "Up among the rocks", when: s => !s.flags.lambRocks, next: "lambRocks" },
-      { label: "In the bramble patch", when: s => !s.flags.lambBramble, next: "lambBramble" },
-      { label: "Bring them back to Joanes", when: s => s.flags.lambStream && s.flags.lambRocks && s.flags.lambBramble, next: "lambsDone" }
+      { label: "Behean, erreka izoztuaren ondoan", when: s => !s.flags.lambStream, next: "lambStream" },
+      { label: "Goian, harkaitzen artean", when: s => !s.flags.lambRocks, next: "lambRocks" },
+      { label: "Sasitzan", when: s => !s.flags.lambBramble, next: "lambBramble" },
+      { label: "Eraman Joanesengana", when: s => s.flags.lambStream && s.flags.lambRocks && s.flags.lambBramble, next: "lambsDone" }
     ]
   },
   lambStream: {
     image: "lambs",
     effect: { flag: "lambStream" },
-    text: "By the stream, a lamb is stranded on a rock in the middle of the ice, bleating miserably. You test the ice with one foot — it holds — and you carry the lamb back. It's heavier than it looks, and it licks your ear.",
-    choices: [{ label: "Listen for the next bell", next: "lambsHub" }]
+    text: "Errekan, bildots bat harri baten gainean geratu da harrapatuta, izotzaren erdian, negar-zotinka. Izotza oin batekin probatzen duzu (eusten du) eta bildotsa eramaten duzu. Dirudiena baino astunagoa da, eta belarria miazkatzen dizu.",
+    choices: [{ label: "Hurrengo joalari adi jarri", next: "lambsHub" }]
   },
   lambRocks: {
     image: "lambs",
     effect: { flag: "lambRocks" },
-    text: "Up among the rocks, a lamb has its bell caught on a root and can't move. You unhook it, and it bounces off down the hill straight towards the hut as if it had known the way all along.",
-    choices: [{ label: "Listen for the next bell", next: "lambsHub" }]
+    text: "Goian, harkaitzen artean, bildots baten joala sustrai batean trabatuta dago eta ezin da mugitu. Askatu egiten duzu, eta jauzika jaisten da muinoan behera, zuzen-zuzen txabolarantz, bidea betidanik ezagutuko balu bezala.",
+    choices: [{ label: "Hurrengo joalari adi jarri", next: "lambsHub" }]
   },
   lambBramble: {
     image: "lambs",
     effect: { flag: "lambBramble" },
-    text: s => "The bramble patch is dark and tangled. " +
-      (s.items.torch ? "Your torch picks out two shining eyes, low down — a lamb, hiding from the wind." : "You crawl in on your hands and knees, following the bell, until you bump noses with a very surprised lamb.") +
-      " It's more than happy to be carried out.",
-    choices: [{ label: "Listen for the next bell", next: "lambsHub" }]
+    text: s => "Sasitza iluna eta korapilatsua da. " +
+      (s.items.torch ? "Zure linternak bi begi distiratsu harrapatzen ditu, behe-behean: bildots bat, haizetik ezkutatuta." : "Lau hankan sartzen zara, joalaren hotsari jarraituz, harrituta dagoen bildots batekin sudurrez sudur topo egin arte.") +
+      " Oso pozik uzten du bere burua kanpora eramaten.",
+    choices: [{ label: "Hurrengo joalari adi jarri", next: "lambsHub" }]
   },
   lambsDone: {
     image: "joanes",
     effect: { kind: "lambs", item: "bread", learn: true },
-    text: "Joanes counts his lambs twice, then laughs and hugs you. He smells of smoke and sheep. “Here — bread and cheese for your journey.”\n\nThen he looks at you more carefully. “You're on your way to the Lady, aren't you? I can tell. I met her once, when I was a boy, sheltering from a storm in a cave...”",
+    text: "Joanesek bi aldiz zenbatzen ditu bildotsak, eta gero barre egiten du eta besarkada bat ematen dizu. Ke eta ardi usaina du. “Tori: ogia eta gazta bidairako.”\n\nOrduan arretaz begiratzen dizu. “Damarengana zoaz, ezta? Nabari zaizu. Nik behin ezagutu nuen, mutikoa nintzela, ekaitz batetik babesten ari nintzela kobazulo batean...”",
     choices: NEXT("joanesHint")
   },
   joanesHint: {
@@ -1014,12 +1050,12 @@ const story = {
   joanesHat: {
     image: "joanes",
     effect: { useItem: "hat", kind: "hat" },
-    text: "Joanes pulls your woolly hat down over his ears. It has a pompom. “Well? How do I look?”\n\nRidiculous. But warm.",
-    choices: [{ label: "Go back down to the forest path", next: "basajaunStart" }, TO_CLEARING]
+    text: "Joanesek zure artilezko txanoa belarrietaraino sartzen du. Borla bat du. “Eta? Nola geratzen zait?”\n\nBarregarri. Baina epel.",
+    choices: [{ label: "Basoko bidera jaitsi", next: "basajaunStart" }, TO_CLEARING]
   },
   joanesRevisit: {
     image: "joanes",
-    text: "Joanes waves from the door of his hut. He's counting his sheep for about the hundredth time.",
+    text: "Joanesek eskua astintzen du txabolaren atetik. Ardiak zenbatzen ari da, ehungarren aldiz edo.",
     choices: s => JOANES_LEAVING
   },
 
@@ -1027,299 +1063,299 @@ const story = {
   atarrabiPath: {
     image: "bridge",
     effect: { found: "river" },
-    text: "The path to the hermitage hill crosses a river. An old stone bridge arches over the black water — so old that nobody remembers who built it.",
+    text: "Ermitako muinorako bideak ibai bat zeharkatzen du. Harrizko zubi zahar batek ur beltzaren gainean egiten du arku: hain zaharra, ezen inork ez baitu gogoratzen nork eraiki zuen.",
     choices: [
-      { label: "Cross the bridge and climb the hill", next: s => s.quests.atarrabi === "resolved" ? "atarrabiRevisit" : "atarrabiHill" },
-      { label: "Follow the riverbank — you thought you heard someone crying", when: s => !s.kind.comb, next: "riverBank" },
-      { label: "Walk along the riverbank", when: s => s.kind.comb, next: "laminaRevisit" },
+      { label: "Zubia zeharkatu eta muinora igo", next: s => s.quests.atarrabi === "resolved" ? "atarrabiRevisit" : "atarrabiHill" },
+      { label: "Ibaiertzari jarraitu: norbait negarrez entzun duzula iruditu zaizu", when: s => !s.kind.comb, next: "riverBank" },
+      { label: "Ibaiertzean barrena ibili", when: s => s.kind.comb, next: "laminaRevisit" },
       TO_CLEARING
     ]
   },
   atarrabiHill: {
     image: "hermitage",
-    text: "On top of the hill stands a tiny hermitage, an ermita, with a bell hanging in a little stone arch. A young man is pulling the bell rope — slowly, steadily — and the bell rings out over the valley. Hailstones bounce off the roof all around him. There's something odd about him, but you can't work out what.",
+    text: "Muinoaren gainean ermita txiki bat dago, harrizko arku txiki batean kanpai bat zintzilik duela. Gazte bat kanpaiaren sokari tiraka ari da, poliki, etengabe, eta kanpaiaren hotsa haranean zehar zabaltzen da. Txingorra teilatuan errebotean dabil haren inguruan. Bada zerbait bitxia mutil horrengan, baina ez dakizu zer.",
     choices: [
-      { label: "Watch him for a moment", when: s => !s.flags.sawShadow, next: "atarrabiShadow" },
-      { label: "Call out to him", next: "atarrabiMeet" },
-      { label: "Creep back down the hill", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+      { label: "Une batez begiratu", when: s => !s.flags.sawShadow, next: "atarrabiShadow" },
+      { label: "Deitu", next: "atarrabiMeet" },
+      { label: "Isilean muinoan behera jaitsi", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
     ]
   },
   atarrabiShadow: {
     image: "hermitage",
     effect: { flag: "sawShadow" },
-    text: "Then you see it. The lantern by the door throws your shadow long and black across the snow. But the young man, standing right next to the lantern, has no shadow at all.",
+    text: "Orduan ikusten duzu. Atearen ondoko farolak zure itzala luze eta beltz botatzen du elurraren gainean. Baina mutilak, farolaren ondo-ondoan zutik egonda ere, ez du itzalik batere.",
     choices: [
-      { label: "Call out to him", next: "atarrabiMeet" },
-      { label: "Creep back down the hill", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+      { label: "Deitu", next: "atarrabiMeet" },
+      { label: "Isilean muinoan behera jaitsi", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
     ]
   },
   atarrabiMeet: {
     image: "atarrabi",
-    text: "He turns, still pulling the rope. “A visitor! On a night like this.” His smile is tired. “I'm Atarrabi. My brother Mikelats is up in the clouds, throwing hail at the farms. While the bell rings, the hail can't fall on them. But I've been ringing since sunset, and my arms...”",
+    text: "Buelta ematen du, sokari tiraka jarraituz. “Bisitari bat! Horrelako gau batean.” Irribarre nekatua egiten du. “Atarrabi naiz. Nire anaia Mikelats hodeietan dago, baserrietara txingorra botatzen. Kanpaiak jotzen duen bitartean, txingorrak ezin du haien gainera erori. Baina ilunabarretik nago jotzen, eta besoak...”",
     choices: [
-      { label: "Offer to ring the bell for him", next: "bell1" },
-      { label: "Ask him why he has no shadow", when: s => s.flags.sawShadow && !s.lore.includes("atarrabi"), next: "atarrabiShadowTalk" },
-      { label: "Say you can't stay", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+      { label: "Kanpaia zuk jotzea eskaini", next: "bell1" },
+      { label: "Galdetu zergatik ez duen itzalik", when: s => s.flags.sawShadow && !s.lore.includes("atarrabi"), next: "atarrabiShadowTalk" },
+      { label: "Esan ezin zarela geratu", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
     ]
   },
   // Atarrabi's real legend involves a devil's school — too dark to tell here. This keeps it oblique.
   atarrabiShadowTalk: {
     image: "atarrabi",
     effect: { lore: "atarrabi" },
-    text: "He laughs softly. “You noticed. When my brother and I were young, we had a teacher who lived deep in a cave — a teacher who always kept one of his pupils for himself. I made sure it wasn't Mikelats. I got away in the end... but my shadow stayed behind.”",
+    text: "Barre leun bat egiten du. “Konturatu zara. Anaia eta biok gazteak ginela, irakasle bat izan genuen, kobazulo sakon batean bizi zena; ikasleetako bat beti beretzat gordetzen zuen irakaslea. Nik ziurtatu nuen Mikelats ez izatea. Azkenean ihes egin nuen... baina nire itzala han geratu zen.”",
     choices: [
-      { label: "Offer to ring the bell for him", next: "bell1" },
-      { label: "Say you can't stay", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
+      { label: "Kanpaia zuk jotzea eskaini", next: "bell1" },
+      { label: "Esan ezin zarela geratu", next: "atarrabiDeclined", effect: { decline: "atarrabi" } }
     ]
   },
   bell1: {
     image: "hermitage",
-    text: "You take the rope. It's heavier than it looks! You pull — DONG — and the bell swings. Atarrabi watches you. “Not too fast, not too slow. Like a heartbeat.”",
+    text: "Soka hartzen duzu. Dirudiena baino astunagoa da! Tira egiten duzu (DAN!) eta kanpaia kulunkatzen da. Atarrabik begiratu egiten dizu. “Ez azkarregi, ez motelegi. Bihotz-taupada bat bezala.”",
     choices: [
-      { label: "Ring it slow and steady", next: "bell2" },
-      { label: "Ring it as fast as you can", next: "bellFast" }
+      { label: "Poliki eta etengabe jo", next: "bell2" },
+      { label: "Ahalik eta azkarren jo", next: "bellFast" }
     ]
   },
   bellFast: {
     image: "hermitage",
-    text: "DONG-DONG-DONG-DONG — your arms burn and the rhythm falls to pieces. Atarrabi puts a hand on the rope. “Steady. The hail is patient. We have to be more patient.”",
-    choices: [{ label: "Ring it slow and steady", next: "bell2" }]
+    text: "DAN-DAN-DAN-DAN... besoak erretzen zaizkizu eta erritmoa hondatu egiten da. Atarrabik eskua jartzen du sokan. “Lasai. Txingorrak pazientzia du. Guk are gehiago izan behar dugu.”",
+    choices: [{ label: "Poliki eta etengabe jo", next: "bell2" }]
   },
   bell2: {
     image: "hermitage",
-    text: "DONG... DONG... DONG. Atarrabi nods. “I'm going up to talk to my brother. Keep it ringing until I come back. Whatever happens.” And he walks up into the swirling snow and disappears.",
+    text: "DAN... DAN... DAN. Atarrabik baietz egiten du buruarekin. “Gora noa nire anaiarekin hitz egitera. Jarraitu jotzen itzuli arte. Gertatzen dena gertatzen dela.” Eta elur-zurrunbiloan gora abiatzen da, eta desagertu egiten da.",
     choices: NEXT("bell3")
   },
   bell3: {
     image: "mikelats",
     effect: { flag: "metMikelats", lore: "mikelats" },
-    text: s => "You ring. And ring. The cold creeps into your fingers. Hail rattles on the roof. Then a voice beside you, sly and friendly: “Why bother? Let go. Nobody would ever know.”\n\n" +
-      (s.flags.mikelatsCross ? "It's Mikelats again, grinning, his long shadow twitching on the snow." : "It's a young man with a crooked grin. He looks a lot like Atarrabi — but he has a shadow: a long, dark, restless one that twitches on the snow."),
+    text: s => "Jo eta jo jarraitzen duzu. Hotza hatzetan sartzen zaizu. Txingorrak teilatua astintzen du. Orduan, ahots bat zure ondoan, maltzur eta atsegin: “Zertarako? Askatu. Inork ez luke inoiz jakingo.”\n\n" +
+      (s.flags.mikelatsCross ? "Mikelats da berriro, irribarrez, bere itzal luzea elurrean dardaraka." : "Gazte bat da, irribarre okerra duena. Atarrabiren antz handia du... baina itzala du: luzea, iluna eta geldiezina, elurrean dardaraka."),
     choices: [
-      { label: "Keep ringing", next: "bell4" },
-      { label: "Let go of the rope, just for a second", next: "bellLetGo" },
-      { label: "“Who are you?”", when: s => !s.flags.mikelatsCross, next: "bellWho" }
+      { label: "Jotzen jarraitu", next: "bell4" },
+      { label: "Soka askatu, segundo batez bakarrik", next: "bellLetGo" },
+      { label: "“Nor zara zu?”", when: s => !s.flags.mikelatsCross, next: "bellWho" }
     ]
   },
   bellWho: {
     image: "mikelats",
-    text: "“Me? I'm Mikelats. Atarrabi's brother. The fun one.” His shadow does a little dance on the snow all by itself. “Go on. Let go. Just to see what happens.”",
+    text: "“Ni? Mikelats naiz. Atarrabiren anaia. Dibertigarria.” Bere itzalak dantzatxo bat egiten du elurrean, bere kasa. “Tira. Askatu. Zer gertatzen den ikusteko besterik ez.”",
     choices: [
-      { label: "Keep ringing", next: "bell4" },
-      { label: "Let go of the rope, just for a second", next: "bellLetGo" }
+      { label: "Jotzen jarraitu", next: "bell4" },
+      { label: "Soka askatu, segundo batez bakarrik", next: "bellLetGo" }
     ]
   },
   bellLetGo: {
     image: "hermitage",
-    text: "The bell falls silent. At once, the hail gets thicker and louder and starts to roar down towards the farms in the valley — you can hear it! You grab the rope again. DONG! The roar dies away. Mikelats sighs. “Oh, you're no fun.”",
-    choices: [{ label: "Keep ringing", next: "bell4" }]
+    text: "Kanpaia isildu egiten da. Berehala, txingorra lodiago eta ozenago bihurtzen da, eta haraneko baserrietarantz hasten da orroka jaisten. Entzun egiten duzu! Soka berriro hartzen duzu. DAN! Orroa itzali egiten da. Mikelatsek hasperen egiten du. “Benetan aspergarria zara.”",
+    choices: [{ label: "Jotzen jarraitu", next: "bell4" }]
   },
   bell4: {
     image: "hermitage",
-    text: "Mikelats shrugs and vanishes into the snow. Not long after, Atarrabi comes down the hill, and the hail stops. The clouds tear open: stars. “My brother has gone off to sulk,” he says, rubbing his arms. “You kept the bell going. The farms are safe — your grandparents' too.”",
+    text: "Mikelatsek sorbaldak altxatu eta elurretan desagertzen da. Handik gutxira, Atarrabi muinotik jaisten da, eta txingorra gelditu egiten da. Hodeiak urratu egiten dira: izarrak. “Nire anaia muturtuta joan da”, dio besoak igurtziz. “Zuk eutsi diozu kanpaiari. Baserriak salbu daude, zure aiton-amonena ere bai.”",
     choices: NEXT("atarrabiHint")
   },
   atarrabiHint: {
     image: "atarrabi",
     effect: { resolve: "atarrabi", learn: true, lore: "atarrabi" },
-    text: s => "“Mari Domingi sent you? Then you're trying to reach my mother — the Lady of the mountains. Listen.”\n\n" + hint("atarrabi")(s),
+    text: s => "“Mari Domingik bidali zaitu? Orduan nire amarengana iritsi nahian zabiltza: mendietako Damarengana. Entzun.”\n\n" + hint("atarrabi")(s),
     choices: [
-      { label: "Go down to the river", next: "atarrabiPath" },
+      { label: "Ibaira jaitsi", next: "atarrabiPath" },
       TO_CLEARING
     ]
   },
   atarrabiDeclined: {
     image: "bridge",
-    text: "You slip away down the hill. Behind you, the bell keeps ringing — slower, and slower.",
+    text: "Isilean jaisten zara muinoan behera. Atzean, kanpaiak jotzen jarraitzen du... gero eta motelago.",
     choices: [TO_CLEARING]
   },
   atarrabiRevisit: {
     image: "atarrabi",
-    text: "Atarrabi waves from the door of the hermitage. The bell is quiet, and the sky over the hill is full of stars.",
-    choices: [{ label: "Go back down to the bridge", next: "atarrabiPath" }, TO_CLEARING]
+    text: "Atarrabik eskua astintzen du ermitaren atetik. Kanpaia isilik dago, eta muino gaineko zerua izarrez beteta.",
+    choices: [{ label: "Zubira jaitsi", next: "atarrabiPath" }, TO_CLEARING]
   },
 
   // ===================== THE LAMIÑA (side: the golden comb, and honesty) =====================
   riverBank: {
     image: "lamina",
-    text: "You follow the riverbank. Under a willow, a woman with very long hair is searching through the snow at the water's edge, crying softly. Her feet, you notice, are webbed like a duck's.",
+    text: "Ibaiertzari jarraitzen diozu. Sahats baten azpian, ile oso luzeko emakume bat ur ertzeko elurrean zerbaiten bila ari da, negar isilean. Konturatzen zara bere oinak ahatearenak bezalakoak direla, hatz artean mintza dutela.",
     choices: [
-      { label: "Ask her what's wrong", next: "laminaMeet" },
-      { label: "Back away quietly", next: "atarrabiPath" }
+      { label: "Galdetu zer gertatzen zaion", next: "laminaMeet" },
+      { label: "Isilean atzera egin", next: "atarrabiPath" }
     ]
   },
   laminaMeet: {
     image: "lamina",
     effect: { lore: "lamiak" },
-    text: "“My comb,” she sobs. “My golden comb! The wind snatched it right out of my hand.” She's a lamiña — one of the river women. Everybody knows a lamiña's golden comb is her greatest treasure.",
+    text: "“Nire orrazia”, dio negar-zotinka. “Nire urrezko orrazia! Haizeak eskutik kendu dit.” Lamia bat da, ibaiko emakumeetako bat. Denek dakite lamiaren urrezko orrazia dela bere altxorrik handiena.",
     choices: [
-      { label: "Help her look for it", next: "laminaSearch" },
-      { label: "Say you're sorry, and go", next: "atarrabiPath" }
+      { label: "Lagundu bilatzen", next: "laminaSearch" },
+      { label: "Barkamena eskatu eta joan", next: "atarrabiPath" }
     ]
   },
   laminaSearch: {
     image: "bridge",
-    text: "You search along the bank, poking in the snow. Something glints at the foot of the old bridge: a comb, heavy and golden, strangely warm in your hand.",
+    text: "Ibaiertzean bilatzen duzu, elurra arakatuz. Zerbaitek distira egiten du zubi zaharraren oinean: orrazi bat, astuna eta urrezkoa, harrigarriro epela eskuan.",
     choices: [
-      { label: "Give it back to her", next: "laminaReturn" },
-      { label: "Keep it — it's real gold!", next: "laminaKeep" }
+      { label: "Itzuli iezaiozu", next: "laminaReturn" },
+      { label: "Gorde: benetako urrea da!", next: "laminaKeep" }
     ]
   },
   laminaKeep: {
     image: "lamina",
-    text: "You slip the comb into your pocket. At once the river goes very quiet. The lamiña stops crying and slowly turns her head towards you. “Child,” she says softly. “What's in your pocket?”",
+    text: "Orrazia poltsikoan sartzen duzu. Berehala, ibaia isil-isilik geratzen da. Lamiak negarrari uzten dio eta poliki biratzen du burua zuregana. “Haurra”, dio leunki. “Zer daukazu poltsikoan?”",
     choices: [
-      { label: "Give the comb back", next: "laminaReturn" },
-      { label: "“Nothing.”", next: "laminaLie" }
+      { label: "Orrazia itzuli", next: "laminaReturn" },
+      { label: "“Ezer ez.”", next: "laminaLie" }
     ]
   },
   laminaLie: {
     image: "lamina",
-    text: "“A lamiña always knows where her comb is,” she whispers. The water rises over the toes of your boots, icy cold, and keeps rising.",
-    choices: [{ label: "Give the comb back — quickly!", next: "laminaReturn" }]
+    text: "“Lamiak beti daki non dagoen bere orrazia”, dio xuxurlaka. Ura zure boten puntetaraino igotzen da, izotza bezain hotz, eta gora jarraitzen du.",
+    choices: [{ label: "Orrazia itzuli, azkar!", next: "laminaReturn" }]
   },
   laminaReturn: {
     image: "lamina",
     effect: { kind: "comb", learn: true },
-    text: s => "She takes the comb and holds it against her heart. “Thank you. Lamiak never forget a kindness — we've built whole bridges in one night for people who were good to us.” She runs the comb through her hair, and smiles. “And I know something that the Lady's visitors need to know.”\n\n" + hint("lamina")(s),
-    choices: [{ label: "Go back to the bridge", next: "atarrabiPath" }, TO_CLEARING]
+    text: s => "Orrazia hartu eta bihotzaren kontra estutzen du. “Eskerrik asko. Lamiok ez dugu inoiz ahazten egindako ontasun bat: zubi osoak eraiki ditugu gau bakar batean, gurekin onak izan direnentzat.” Orrazia ilean zehar pasatzen du, eta irribarre egiten du. “Eta badakit Damaren bisitariek jakin behar duten zerbait.”\n\n" + hint("lamina")(s),
+    choices: [{ label: "Zubira itzuli", next: "atarrabiPath" }, TO_CLEARING]
   },
   laminaRevisit: {
     image: "lamina",
-    text: "The lamiña is sitting on a rock in the middle of the river, combing her hair with her golden comb. She waves a webbed foot at you.",
-    choices: [{ label: "Go back to the bridge", next: "atarrabiPath" }, TO_CLEARING]
+    text: "Lamia ibaiaren erdiko harri baten gainean eserita dago, ilea urrezko orraziarekin orrazten. Bere oin mintzadunarekin agurtzen zaitu.",
+    choices: [{ label: "Zubira itzuli", next: "atarrabiPath" }, TO_CLEARING]
   },
 
   // ===================== THE SORGINAK (main quest: courage and honesty) =====================
   sorginakPath: {
     image: "mill",
     effect: { found: "mill" },
-    text: "The path climbs through fields towards a meadow high on the hillside. On the way you pass an old stone mill beside the stream. From inside comes a strange, tiny chattering, like a hundred mice all talking at once.",
+    text: "Bidea soroen artetik igotzen da, mendi-hegaleko larre baterantz. Bidean, errekaren ondoko harrizko errota zahar baten ondotik pasatzen zara. Barrutik txio-txio bitxi eta txiki bat dator, ehun sagu batera hizketan ariko balira bezala.",
     choices: [
-      { label: "Keep going up to the meadow", next: s => s.quests.sorginak === "resolved" ? "sorginakRevisit" : "sorginakMeadow" },
-      { label: "Peek inside the mill", next: s => (s.kind.galtza || s.flags.galtzaShut) ? "millRevisit" : "millDoor" },
+      { label: "Larrera igotzen jarraitu", next: s => s.quests.sorginak === "resolved" ? "sorginakRevisit" : "sorginakMeadow" },
+      { label: "Errotaren barrura begiratu", next: s => (s.kind.galtza || s.flags.galtzaShut) ? "millRevisit" : "millDoor" },
       TO_CLEARING
     ]
   },
   sorginakMeadow: {
     image: "sorginak",
-    text: "In the middle of the meadow a big fire is burning, and around it move shapes — women in shawls, laughing and talking. Sorginak. You've heard stories about the sorginak. Scary ones.",
+    text: "Larrearen erdian su handi bat dago piztuta, eta haren inguruan itzalak mugitzen dira: emakumeak, txalez jantziak, barrez eta hizketan. Sorginak. Sorginei buruzko istorioak entzun dituzu. Beldurgarriak.",
     choices: s => SORGINAK_APPROACH
   },
   sorginakHide: {
     image: "sorginak",
-    text: "You crouch behind a tree. Without even turning round, one of the sorginak calls out: “We can see you, little one! Your nose is as red as a berry. Come and get warm.”",
+    text: "Zuhaitz baten atzean makurtzen zara. Buelta eman ere egin gabe, sorginetako batek oihu egiten du: “Ikusten zaitugu, txikitxo! Zure sudurra masusta bezain gorria dago. Zatoz berotzera.”",
     choices: s => SORGINAK_APPROACH.slice(1)
   },
   sorginakFlower: {
     image: "sorginak",
     effect: { lore: "eguzkilore" },
-    text: "As you step closer, the sorginak stop laughing and back away. “The sun-flower,” one of them hisses. “It's in your pocket. We can't come near while you carry it.”\n\nThe eguzkilore! People hang it on their doors so that sorginak and lamiak have to stop and count every one of its spiky petals — and the sun rises before they finish.",
+    text: "Hurbiltzen zarenean, sorginek barreari uzten diote eta atzera egiten dute. “Eguzkilorea”, dio batek txistuka. “Poltsikoan daukazu. Ezin gara hurbildu zuk daramazun bitartean.”\n\nEguzkilorea! Jendeak ateetan jartzen du, sorginek eta lamiek gelditu eta bere petalo zorrotz guztiak zenbatu behar izan ditzaten... eta amaitu aurretik ateratzen da eguzkia.",
     choices: [
-      { label: "Leave the eguzkilore at the edge of the meadow", next: "sorginakApproach", effect: { useItem: "eguzkilore", flag: "flowerLeft" } },
-      { label: "Keep it — you might need protecting", next: "sorginakFlowerKeep" }
+      { label: "Utzi eguzkilorea larrearen ertzean", next: "sorginakApproach", effect: { useItem: "eguzkilore", flag: "flowerLeft" } },
+      { label: "Gorde: babesa behar izan dezakezu", next: "sorginakFlowerKeep" }
     ]
   },
   sorginakFlowerKeep: {
     image: "sorginak",
-    text: "The sorginak stay on the far side of the fire, muttering and keeping their distance. From out here, you can't really talk to anyone.",
+    text: "Sorginak suaren beste aldean geratzen dira, marmarka eta tartea gordez. Hemendik ezin duzu inorekin benetan hitz egin.",
     choices: [
-      { label: "Leave the eguzkilore at the edge of the meadow", next: "sorginakApproach", effect: { useItem: "eguzkilore", flag: "flowerLeft" } },
-      { label: "Run back down the hill", next: "sorginakDeclined", effect: { decline: "sorginak" } }
+      { label: "Utzi eguzkilorea larrearen ertzean", next: "sorginakApproach", effect: { useItem: "eguzkilore", flag: "flowerLeft" } },
+      { label: "Muinoan behera ihes egin", next: "sorginakDeclined", effect: { decline: "sorginak" } }
     ]
   },
   sorginakApproach: {
     image: "sorginakFire",
-    text: "The fire is warm. Up close, the sorginak are... just women. Old ones and young ones, with rosy cheeks and sharp eyes, stirring a pot that smells of herbs. The oldest looks you up and down. “Well, then. What do they say about us, down in the villages?”",
+    text: "Sua epela da. Gertutik, sorginak... emakumeak besterik ez dira. Zaharrak eta gazteak, masail gorriak eta begi zorrotzak dituztenak, belar usaina duen lapiko bat eragiten. Zaharrenak goitik behera begiratzen dizu. “Tira, bada. Zer esaten dute gutaz behean, herrietan?”",
     choices: [
-      { label: "“Nothing! Nothing bad.”", next: "sorginakFib" },
-      { label: "“That you serve the Lady of the mountains.”", next: "sorginakServe" },
-      { label: "“That you're wicked witches who eat children.”", next: "sorginakTruth" }
+      { label: "“Ezer ez! Ezer txarrik ez.”", next: "sorginakFib" },
+      { label: "“Mendietako Dama zerbitzatzen duzuela.”", next: "sorginakServe" },
+      { label: "“Haurrak jaten dituzten sorgin gaiztoak zaretela.”", next: "sorginakTruth" }
     ]
   },
   sorginakFib: {
     image: "sorginakFire",
-    text: "The oldest one raises an eyebrow. “Hm. Our Lady can't abide a lie, child, and neither can we. Try again.”",
+    text: "Zaharrenak bekain bat altxatzen du. “Hmm. Gure Damak ezin du gezurrik jasan, haurra, eta guk ere ez. Saiatu berriro.”",
     choices: [
-      { label: "“That you serve the Lady of the mountains.”", next: "sorginakServe" },
-      { label: "“That you're wicked witches who eat children.”", next: "sorginakTruth" }
+      { label: "“Mendietako Dama zerbitzatzen duzuela.”", next: "sorginakServe" },
+      { label: "“Haurrak jaten dituzten sorgin gaiztoak zaretela.”", next: "sorginakTruth" }
     ]
   },
   sorginakServe: {
     image: "sorginakFire",
-    text: "“Ha! Somebody's been listening to the right people.” But she can see the fear in your face. “And what else do they say?”",
-    choices: [{ label: "“...That you're wicked witches who eat children.”", next: "sorginakTruth" }]
+    text: "“Ha! Norbaitek jende egokiari egin dio kasu.” Baina zure aurpegian beldurra ikusten du. “Eta zer gehiago esaten dute?”",
+    choices: [{ label: "“...Haurrak jaten dituzten sorgin gaiztoak zaretela.”", next: "sorginakTruth" }]
   },
   sorginakTruth: {
     image: "sorginakFire",
     effect: { lore: "sorginak" },
-    text: "They all laugh — but not unkindly. “Ah, the old stories. We are the Lady's household, child. We fetch and carry, and keep her fires, and keep her secrets. But long ago, people used our name to blame ordinary women — neighbours, grandmothers — for every storm and every sick cow. That wasn't us. That was fear.”",
+    text: "Denek egiten dute barre, baina ez gaiztoki. “A, istorio zaharrak. Damaren etxekoak gara, haurra. Gauzak ekarri eta eraman, bere suak zaindu, bere sekretuak gorde. Baina aspaldi, jendeak gure izena erabili zuen emakume arruntei (auzokideei, amonei) ekaitz bakoitzaren eta behi gaixo bakoitzaren errua botatzeko. Hori ez ginen gu. Beldurra zen.”",
     choices: [
-      { label: "Say you're sorry people tell such stories", next: "sorginakDance" },
-      { label: "Ask if they can help with Olentzero's fire", next: "sorginakDance" }
+      { label: "Esan pena ematen dizula horrelako istorioak kontatzeak", next: "sorginakDance" },
+      { label: "Galdetu ea Olentzeroren suarekin lagundu dezaketen", next: "sorginakDance" }
     ]
   },
   sorginakDance: {
     image: "sorginakFire",
-    text: "“Help? That's for the Lady to decide. But you walked into our firelight even though you were frightened — and that's the bravest kind of brave.” The oldest one claps her hands. “Now. Nobody leaves our fire without dancing!”",
+    text: "“Laguntza? Hori Damak erabaki behar du. Baina gure suaren argira sartu zara, beldurtuta egonda ere, eta hori da ausardiarik handiena.” Zaharrenak txalo egiten du. “Eta orain! Inor ez da gure suaren ondotik joaten dantzatu gabe!”",
     choices: [
-      { label: "Dance!", next: "sorginakHint" },
-      { label: "Clap along instead", next: "sorginakHint" }
+      { label: "Dantzatu!", next: "sorginakHint" },
+      { label: "Txalo egin, horren ordez", next: "sorginakHint" }
     ]
   },
   sorginakHint: {
     image: "sorginakFire",
     effect: s => ({ resolve: "sorginak", learn: true, item: s.flags.flowerLeft ? "eguzkilore" : undefined }),
-    text: s => "Round and round the fire, sparks flying up into the snow, until you're dizzy and warm right through. When you finally stop, the oldest one bends down and whispers in your ear:\n\n" + hint("sorginak")(s) +
-      (s.flags.flowerLeft ? "\n\nOn your way out, you pick up your eguzkilore from the edge of the meadow." : ""),
-    choices: [{ label: "Go back down past the mill", next: "sorginakPath" }, TO_CLEARING]
+    text: s => "Bueltaka eta bueltaka suaren inguruan, txinpartak elurrera hegan, zorabiatuta eta barru-barruraino berotuta egon arte. Azkenean gelditzen zarenean, zaharrena makurtu eta belarrira xuxurlatzen dizu:\n\n" + hint("sorginak")(s) +
+      (s.flags.flowerLeft ? "\n\nIrteeran, zure eguzkilorea jasotzen duzu larrearen ertzetik." : ""),
+    choices: [{ label: "Errotaren ondotik jaitsi", next: "sorginakPath" }, TO_CLEARING]
   },
   sorginakDeclined: {
     image: "sorginak",
-    text: "You hurry back down the hill. Behind you there's laughter — but whether it's at you or at some joke of their own, you can't tell.",
+    text: "Presaka jaisten zara muinoan behera. Atzean barreak entzuten dira, baina ez dakizu zuri barrez ari diren ala beren txantxaren batengatik.",
     choices: [TO_CLEARING]
   },
   sorginakRevisit: {
     image: "sorginakFire",
-    text: "The sorginak wave from their fire. “Come back any time, little brave one!”",
-    choices: [{ label: "Go back down past the mill", next: "sorginakPath" }, TO_CLEARING]
+    text: "Sorginek agur egiten dizute beren sutik. “Itzuli nahi duzunean, ausart txikia!”",
+    choices: [{ label: "Errotaren ondotik jaitsi", next: "sorginakPath" }, TO_CLEARING]
   },
 
   // ===================== THE GALTZAGORRIAK (side: keep them busy — usefully) =====================
   millDoor: {
     image: "galtzagorriak",
     effect: { lore: "galtzagorriak" },
-    text: "You push open the mill door. The millstone is still. On the miller's table sits an open needle case — and pouring out of it are tiny little men in bright red trousers, dozens and dozens of them, swarming up your boots and shouting: “Zer egin? Zer egin? What shall we do? What shall we do?”",
+    text: "Errotako atea bultzatzen duzu. Errota-harria geldi dago. Errotariaren mahai gainean orratz-ontzi bat dago irekita... eta handik ateratzen ari dira galtza gorri biziak dituzten gizontxo txiki-txikiak, dozenaka eta dozenaka, zure botetan gora igotzen oihuka: “Zer egin? Zer egin? Zer egin? Zer egin?”",
     choices: s => GALTZA_JOBS
   },
   galtzaTidy: {
     image: "galtzagorriak",
     effect: { flag: "galtzaTidy" },
-    text: "In the blink of an eye, the whole mill is swept, every sack is stacked and every cobweb is gone. “Done! Done! What next? What next?” They're getting impatient — some of them have started untying your bootlaces.",
+    text: "Begi-keinu batean, errota osoa garbituta dago, zaku guztiak pilatuta eta armiarma-sare guztiak desagertuta. “Eginda! Eginda! Eta orain? Eta orain?” Pazientzia galtzen ari dira: batzuk zure oinetakoen lokarriak askatzen hasi dira.",
     choices: s => GALTZA_JOBS
   },
   galtzaWood: {
     image: "galtzagorriak",
     effect: { kind: "galtza", flag: "galtzaWood" },
-    text: "“Firewood! Firewood!” They pour out of the door like a little red river and are gone. Far off, towards the clearing, you hear a great deal of very fast chopping.",
-    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+    text: "“Egurra! Egurra!” Atetik irteten dira, ibai gorri txiki bat bezala, eta desagertu egiten dira. Urrun, soilgune aldera, aizkora-hots azkar-azkar ugari entzuten da.",
+    choices: [{ label: "Bidera itzuli", next: "sorginakPath" }, TO_CLEARING]
   },
   galtzaRoad: {
     image: "galtzagorriak",
     effect: { kind: "galtza", flag: "galtzaRoad" },
-    text: "“The road! The road!” They stream out of the door and away down the valley. By morning, every snowdrift between the baserri and the village will be gone, and nobody will ever know how.",
-    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+    text: "“Bidea! Bidea!” Atetik irten eta haranean behera doaz. Goizerako, baserriaren eta herriaren arteko elur-pila guztiak desagertuta egongo dira, eta inork ez du inoiz jakingo nola.",
+    choices: [{ label: "Bidera itzuli", next: "sorginakPath" }, TO_CLEARING]
   },
   galtzaShut: {
     image: "galtzagorriak",
     effect: { flag: "galtzaShut" },
-    text: "You scoop up as many as you can and snap the lid shut on them. But three escape — and tie your bootlaces together. By the time you've untangled yourself, they've vanished.",
-    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+    text: "Ahal dituzun guztiak biltzen dituzu eta tapa ixten diezu. Baina hiruk ihes egiten dute... eta zure oinetakoen lokarriak elkarri lotzen dizkizute. Askatzea lortzen duzunerako, desagertuta daude.",
+    choices: [{ label: "Bidera itzuli", next: "sorginakPath" }, TO_CLEARING]
   },
   millRevisit: {
     image: "mill",
-    text: "The mill is quiet now. The needle case sits closed on the table. From inside it comes a very small voice: “Zer egin?”",
-    choices: [{ label: "Go back to the path", next: "sorginakPath" }, TO_CLEARING]
+    text: "Errota isilik dago orain. Orratz-ontzia itxita dago mahai gainean. Barrutik, ahots txiki-txiki bat: “Zer egin?”",
+    choices: [{ label: "Bidera itzuli", next: "sorginakPath" }, TO_CLEARING]
   },
 
   // ===================== MIKELATS (side: the shortcut that goes nowhere) =====================
@@ -1327,29 +1363,29 @@ const story = {
   mikelatsMeet: {
     image: "mikelats",
     effect: { flag: "mikelatsCross", lore: "mikelats" },
-    text: "A young man is leaning on a fence where the paths cross, grinning. His shadow is long and restless. “All this walking about! Let me guess — you're trying to get to my mother. I can take you straight to her. No more silly favours for silly forest folk.”",
+    text: "Gazte bat hesi baten kontra dago bermatuta, bideak gurutzatzen diren tokian, irribarrez. Bere itzala luzea eta geldiezina da. “Hainbeste ibili! Asmatuko dut: nire amarengana iritsi nahian zabiltza. Zuzenean eraman zaitzaket berarengana. Basoko jende ergelentzako mesede ergel gehiagorik ez.”",
     choices: [
-      { label: "Follow him", next: "mikelatsFollow", effect: { flag: "followedMikelats" } },
-      { label: "Ask who his mother is", next: "mikelatsWho" },
-      { label: "“No, thank you.”", next: "mikelatsRefuse" }
+      { label: "Jarraitu", next: "mikelatsFollow", effect: { flag: "followedMikelats" } },
+      { label: "Galdetu nor den bere ama", next: "mikelatsWho" },
+      { label: "“Ez, eskerrik asko.”", next: "mikelatsRefuse" }
     ]
   },
   mikelatsWho: {
     image: "mikelats",
-    text: "“The Lady of the mountains, of course! Mari. I'm Mikelats, her favourite son.” As he says it, his shadow gives a little shrug, as if it didn't quite believe him.",
+    text: "“Mendietako Dama, noski! Mari. Ni Mikelats naiz, bere seme kuttuna.” Hori esatean, bere itzalak sorbaldak altxatzen ditu pixka bat, guztiz sinetsiko ez balio bezala.",
     choices: [
-      { label: "Follow him", next: "mikelatsFollow", effect: { flag: "followedMikelats" } },
-      { label: "“No, thank you.”", next: "mikelatsRefuse" }
+      { label: "Jarraitu", next: "mikelatsFollow", effect: { flag: "followedMikelats" } },
+      { label: "“Ez, eskerrik asko.”", next: "mikelatsRefuse" }
     ]
   },
   mikelatsFollow: {
     image: "forestDay",
-    text: "He leads you down one path and up another, round a big rock, through a gap in a wall and across a frozen field, talking the whole time. Then he stops, bursts out laughing — and he's gone.\n\nYou look around. You're standing in the clearing, right in front of Mari Domingi's little fire.",
+    text: "Bide batetik jaitsi eta beste batetik igotzen zaitu, harkaitz handi baten inguruan, horma bateko zulo batetik eta soro izoztu batean zehar, etengabe hizketan. Orduan gelditu, barre algaraka hasi... eta desagertu egiten da.\n\nInguruari begiratzen diozu. Soilgunean zaude, Mari Domingiren su txikiaren aurrean.",
     choices: [{ label: "Oh.", next: "map" }]
   },
   mikelatsRefuse: {
     image: "mikelats",
-    text: "“Suit yourself,” he shrugs. “Do it the slow way, then. Like my boring brother.” And he's gone in a gust of snow.",
+    text: "“Zuk nahi duzuna”, dio sorbaldak altxatuz. “Egin ezazu modu motelean, orduan. Nire anaia aspergarriak bezala.” Eta elur-bolada batean desagertzen da.",
     choices: [TO_CLEARING]
   },
 
@@ -1357,56 +1393,56 @@ const story = {
   // Each peak has its own short climb, so trying again after a mistake is a real journey.
   anbotoClimb: {
     image: "anboto",
-    text: "The path up Anboto is steep and rocky. The summit is wrapped in a cloud — the old people say that means the Lady is at home.",
+    text: "Anbotorako bidea aldapatsua eta harritsua da. Tontorra hodei batean bilduta dago: zaharrek diote horrek esan nahi duela Dama etxean dagoela.",
     choices: [
-      { label: "Keep climbing", next: "peakDoor" },
-      { label: "Stop and look back down at the valley", next: "anbotoView" }
+      { label: "Igotzen jarraitu", next: "peakDoor" },
+      { label: "Gelditu eta haranera begiratu", next: "anbotoView" }
     ]
   },
   anbotoView: {
     image: "anboto",
-    text: "Far below, tiny lights: the villages, the farms — and somewhere down there, your grandparents' baserri. You take a deep breath of the freezing air and turn back to the mountain.",
-    choices: [{ label: "Keep climbing", next: "peakDoor" }]
+    text: "Behean, urrun, argi txikiak: herriak, baserriak... eta nonbait han behean, zure aiton-amonen baserria. Arnasa sakon hartzen duzu aire izoztuan, eta berriro mendira begiratzen duzu.",
+    choices: [{ label: "Igotzen jarraitu", next: "peakDoor" }]
   },
   txindokiClimb: {
     image: "txindoki",
-    text: "Txindoki rises out of the snow like a sharp tooth. The Lady's fire disappeared somewhere near the top.",
+    text: "Txindoki elurretik ateratzen da, hagin zorrotz bat bezala. Damaren sua tontorretik gertu desagertu zen nonbait.",
     choices: [
-      { label: "Take the windy ridge", next: "txindokiRidge" },
-      { label: "Take the path through the beech wood", next: "txindokiWood" }
+      { label: "Gailur haizetsutik joan", next: "txindokiRidge" },
+      { label: "Pagadian barrena doan bidetik joan", next: "txindokiWood" }
     ]
   },
   txindokiRidge: {
     image: "txindoki",
-    text: "The wind on the ridge nearly knocks you flat. You crouch low and keep going, one handhold at a time, until a dark cave mouth opens in the rock above you.",
-    choices: [{ label: "Climb up to the cave", next: "peakDoor" }]
+    text: "Gailurreko haizeak ia lurrera botatzen zaitu. Makurtuta jarraitzen duzu, heldulekuz heldulekua, zure gainean harkaitzean kobazulo-aho ilun bat ireki arte.",
+    choices: [{ label: "Kobazulora igo", next: "peakDoor" }]
   },
   txindokiWood: {
     image: "txindoki",
-    text: "Among the grey beech trunks it's quieter. Far off, a long howl rolls across the mountains — Basajaun, warning the shepherds of something. The path brings you out right below a dark cave mouth.",
-    choices: [{ label: "Climb up to the cave", next: "peakDoor" }]
+    text: "Pagoen enbor grisen artean lasaiago dago. Urrun, oihu luze bat zabaltzen da mendietan zehar: Basajauna, artzainei zerbaiten berri ematen. Bideak kobazulo-aho ilun baten azpi-azpira eramaten zaitu.",
+    choices: [{ label: "Kobazulora igo", next: "peakDoor" }]
   },
   aizkorriClimb: {
     image: "aizkorri",
-    text: "Aizkorri is long and high, and the snow is deep. Near the top, in a hollow among the rocks, a cave mouth is glowing faintly.",
+    text: "Aizkorri luzea eta garaia da, eta elurra sakona. Tontorretik gertu, harkaitzen arteko zulo batean, kobazulo-aho batek distira ahula du.",
     choices: [
-      { label: "Climb straight up to the glow", next: "peakDoor" },
-      { label: "Call out her name first", next: "aizkorriCall" }
+      { label: "Zuzenean igo distiraraino", next: "peakDoor" },
+      { label: "Lehenago bere izena oihukatu", next: "aizkorriCall" }
     ]
   },
   aizkorriCall: {
     image: "aizkorri",
-    text: "“Mari!” Your voice echoes back three times. The glow in the cave gets brighter, as if somebody inside had heard.",
-    choices: [{ label: "Climb up to the cave", next: "peakDoor" }]
+    text: "“Mari!” Zure ahotsak hiru aldiz egiten du oihartzuna. Kobazuloko distira biziagoa bihurtzen da, barruan norbaitek entzun izan balu bezala.",
+    choices: [{ label: "Kobazulora igo", next: "peakDoor" }]
   },
   peakDoor: {
     image: "caveMouth",
-    text: s => "You stand at the mouth of the Lady's cave. A warm glow comes from somewhere deep inside. Before you go in, you go over everything you know:\n\n" +
-      (knownFacts(s) || "...nothing at all.") +
-      (s.facts.length < FACT_ORDER.length ? "\n\nThere's something you still don't know about how to behave in front of her. Maybe someone out there could tell you." : ""),
+    text: s => "Damaren kobazuloaren ahoan zaude. Distira epel bat dator barru-barrutik. Sartu aurretik, dakizun guztia errepasatzen duzu:\n\n" +
+      (knownFacts(s) || "...ezer ez.") +
+      (s.facts.length < FACT_ORDER.length ? "\n\nBada oraindik ez dakizun zerbait, bere aurrean nola portatu behar den. Agian hor kanpoan norbaitek esan diezazuke." : ""),
     choices: [
-      { label: "Go in", next: "mariCave1" },
-      { label: "Go back down to the clearing", next: "map" }
+      { label: "Sartu", next: "mariCave1" },
+      { label: "Soilgunera jaitsi", next: "map" }
     ]
   },
 
@@ -1419,29 +1455,29 @@ const story = {
   mariCave1: {
     image: "mariCave",
     noBack: true, clearHistory: true,
-    text: "Just inside the cave, on a rock, sits a woman with long golden hair, combing it slowly with a golden comb. The whole cave glows around her as if the rock itself were warm. She doesn't look surprised to see you.\n\n“Who climbs to my door on Christmas Eve?”",
+    text: "Kobazuloaren sarreran bertan, harri baten gainean, urrezko ile luzeko emakume bat dago eserita, urrezko orrazi batekin poliki orrazten. Kobazulo osoak distira egiten du haren inguruan, harria bera epela balitz bezala. Ez dirudi harrituta dagoenik zu ikusteagatik.\n\n“Nor dator nire atarira Gabon gauean?”",
     choices: s => MARI_GREETINGS
   },
   mariBow: {
     image: "mariCave",
     noBack: true,
-    text: "You bow, and wait. The silence goes on and on. At last she says: “Hast thou no tongue, child?”",
+    text: "Burua makurtu eta itxaron egiten duzu. Isiltasunak jarraitu eta jarraitu egiten du. Azkenean, esaten du: “Ez al duk mihirik, haurra?”",
     choices: s => MARI_GREETINGS.slice(0, 2)
   },
   mariCave2: {
     image: "mariCave",
     noBack: true,
-    text: "Mari puts down her comb and looks at you for a long time. Then she points to a flat stone beside the fire. “Sit, child. Thou hast climbed a long way.”",
+    text: "Marik orrazia uzten du eta denbora luzez begiratzen dizu. Orduan, suaren ondoko harri lau bat seinalatzen du. “Eser hadi, haurra. Bide luzea igo duk.”",
     choices: [
-      { label: "Sit down gratefully", next: "mariFailSit", effect: { mariFail: true, learnFact: "noSit" } },
-      { label: "Thank her, but stay standing", next: "mariCave3" },
-      { label: "Hold your frozen hands out to the fire, still standing", next: "mariCave3" }
+      { label: "Eskerrez eseri", next: "mariFailSit", effect: { mariFail: true, learnFact: "noSit" } },
+      { label: "Eskerrak eman, baina zutik geratu", next: "mariCave3" },
+      { label: "Esku izoztuak suari hurbildu, zutik jarraituz", next: "mariCave3" }
     ]
   },
   mariCave3: {
     image: "mariCave",
     noBack: true,
-    text: s => "She nods, and something in her face softens. Then her eyes sharpen again.\n\n" + honesty(s).question,
+    text: s => "Buruarekin baietz egiten du, eta zerbait leuntzen zaio aurpegian. Gero begiak zorrozten zaizkio berriro.\n\n" + honesty(s).question,
     choices: s => [
       { label: honesty(s).lie, next: "mariCave3Lie" },
       { label: honesty(s).truth, next: "mariCave3Truth" }
@@ -1451,7 +1487,7 @@ const story = {
   mariCave3Lie: {
     image: "mariCave",
     noBack: true,
-    text: "The fire in the cave sinks low and blue. Mari says nothing at all. She only looks at you — and the silence is worse than any shouting.\n\n“I cannot abide a lie, child. Nor a boast. Think again.”",
+    text: "Kobazuloko sua txikitu eta urdindu egiten da. Marik ez du ezer esaten. Begiratu besterik ez dizu egiten... eta isiltasuna edozein oihu baino okerragoa da.\n\n“Ezin diat gezurrik jasan, haurra. Ezta harrokeriarik ere. Pentsa ezak berriro.”",
     choices: s => [
       { label: honesty(s).lie, next: "mariCave3Lie" },
       { label: honesty(s).truth, next: "mariCave3Truth" }
@@ -1460,36 +1496,36 @@ const story = {
   mariCave3Truth: {
     image: "mariCave",
     noBack: true,
-    text: s => "The fire brightens again. " + honesty(s).answer + "\n\n“Now. Tell me why thou hast come.”",
+    text: s => "Sua berriro biztu egiten da. " + honesty(s).answer + "\n\n“Orain, esadak zergatik etorri haizen.”",
     choices: NEXT("mariCave4")
   },
   mariCave4: {
     image: "mariCave",
     noBack: true,
-    text: "You tell her everything: the storm, Olentzero's fire, Mari Domingi, the long night. When you've finished, Mari stands, walks to the mouth of the cave, and calls one word out into the storm.\n\nThe whole mountain trembles.",
+    text: "Dena kontatzen diozu: ekaitza, Olentzeroren sua, Mari Domingi, gau luzea. Amaitzen duzunean, Mari zutitu, kobazuloaren ahoraino joan eta hitz bakar bat oihukatzen du ekaitzera.\n\nMendi osoak dardara egiten du.",
     choices: NEXT("mariSugaar1")
   },
   mariSugaar1: {
     image: "sugaar",
     noBack: true,
     effect: { lore: "sugaar" },
-    text: "Something enormous comes down out of the clouds: a serpent made of fire and storm, coiling around the rocks at the cave mouth. The snow hisses into steam wherever he touches it. Sugaar.\n\nHe doesn't look at you. “Why hast thou called me, Mari?”",
+    text: "Zerbait izugarri jaisten da hodeietatik: suz eta ekaitzez egindako suge bat, kobazulo-ahoko harkaitzen inguruan bilduta. Ukitzen duen tokian, elurra lurrun bihurtzen da txistuka. Sugaar.\n\nEz dizu begiratzen. “Zergatik deitu didan, Mari?”",
     choices: NEXT("mariSugaar2")
   },
   mariSugaar2: {
     image: "sugaar",
     noBack: true,
-    text: "“Olentzero's fire has gone out,” says Mari.\n\nSugaar's voice is like thunder far away. “The fires of men are nothing to me.”\n\n“This child,” says Mari, “climbed my mountain on Christmas Eve, spoke to me as one should, and told me the truth. Wilt thou refuse?”\n\nFor the first time, Sugaar turns his burning eyes on you. You make yourself not look away.\n\n“Once,” he says.",
+    text: "“Olentzeroren sua itzali egin da”, dio Marik.\n\nSugaarren ahotsa urruneko ortzantza bezalakoa da. “Gizakien suak? Niretzat ezer ez.”\n\n“Haur honek”, dio Marik, “Gabon gauean igo dik nire mendia, behar bezala hitz egin eta egia esan. Ezetz esango al duk?”\n\nLehen aldiz, Sugaarrek bere begi goriak zuregana itzultzen ditu. Begiak ez apartatzera behartzen duzu zure burua.\n\n“Behin”, dio.",
     choices: NEXT("mariDismiss")
   },
   mariDismiss: {
     image: "mariCave",
     noBack: true,
-    text: "Mari turns back to you. “Go now, {name}. When thou art gone, Sugaar will fly.”",
+    text: "Mari zuregana itzultzen da. “Hoa orain, {name}. Hi joan ondoren, Sugaarrek hegan egingo dik.”",
     choices: [
-      { label: "Turn and run outside to watch", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } },
-      { label: "Walk out backwards, step by step, facing her", next: "endOutside" },
-      { label: "Bow, then turn and walk out calmly", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } }
+      { label: "Buelta eman eta korrika atera, ikustera", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } },
+      { label: "Atzeraka irten, pausoz pauso, aurpegiz bera begira", next: "endOutside" },
+      { label: "Burua makurtu, gero buelta eman eta lasai irten", next: "mariFailBack", effect: { mariFail: true, learnFact: "noBack" } }
     ]
   },
   // Getting a rule wrong: Mari flies to her next mountain (peak has already moved on here),
@@ -1497,104 +1533,104 @@ const story = {
   mariFailHika: {
     image: "caveDark",
     noBack: true, clearHistory: true,
-    text: s => `Mari's eyes flash. “Zu? Am I a stranger, to be spoken to like that at my own door?”\n\nA blast of wind roars out of the cave and knocks you off your feet. When you sit up, the cave is dark and empty — and high above, a ball of fire is streaking across the sky towards ${peak(s).name}.\n\nNow you know: Mari must be spoken to with “hi”, like family.`,
-    choices: [{ label: "Go back down to the clearing", next: "map" }]
+    text: s => `Mariren begiek tximista egiten dute. “Zu? Arrotz bat al naiz ni, nire atarian bertan horrela hitz egiteko?”\n\nHaize-bolada batek orroka egiten du kobazulotik eta lurrera botatzen zaitu. Altxatzen zarenean, kobazuloa ilun eta hutsik dago, eta goian, su-bola bat ari da zeruan zehar ziztuan ${peak(s).name} aldera.\n\nOrain badakizu: Mariri “hi” erabiliz hitz egin behar zaio, familiari bezala.`,
+    choices: [{ label: "Soilgunera jaitsi", next: "map" }]
   },
   mariFailSit: {
     image: "caveDark",
     noBack: true, clearHistory: true,
-    text: s => `The moment you sit down, the stone turns as cold as ice and the fire goes out. In the dark, her voice: “In my house, nobody sits before me.”\n\nWhen your eyes get used to the dark, the cave is empty. High above, her fire is flying away towards ${peak(s).name}.\n\nNow you know: nobody sits down in front of Mari.`,
-    choices: [{ label: "Go back down to the clearing", next: "map" }]
+    text: s => `Esertzen zaren unean, harria izotza bezain hotz bihurtzen da eta sua itzali egiten da. Ilunpetan, bere ahotsa: “Nire etxean, inor ez duk esertzen nire aurrean.”\n\nBegiak iluntasunera ohitzen zaizkizunean, kobazuloa hutsik dago. Goian, bere sua urruntzen ari da hegan ${peak(s).name} aldera.\n\nOrain badakizu: inor ez da esertzen Mariren aurrean.`,
+    choices: [{ label: "Soilgunera jaitsi", next: "map" }]
   },
   mariFailBack: {
     image: "caveDark",
     noBack: true, clearHistory: true,
-    text: s => `As you turn, a blast of wind slams into your back. When you look round, the cave is dark and empty, and Sugaar is gone too. High above, two fires are streaking across the sky towards ${peak(s).name}.\n\nNow you know: you must never turn your back on Mari.`,
-    choices: [{ label: "Go back down to the clearing", next: "map" }]
+    text: s => `Buelta ematen duzunean, haize-bolada batek bizkarrean jotzen zaitu. Atzera begiratzen duzunean, kobazuloa ilun eta hutsik dago, eta Sugaar ere desagertu da. Goian, bi su ari dira zeruan zehar ziztuan ${peak(s).name} aldera.\n\nOrain badakizu: ez diozu inoiz bizkarrik eman behar Mariri.`,
+    choices: [{ label: "Soilgunera jaitsi", next: "map" }]
   },
 
   // ===================== ENDING =====================
   endOutside: {
     image: "caveMouth",
     noBack: true, clearHistory: true,
-    text: "One careful step after another, you walk backwards out of the cave, never taking your eyes off the Lady, until the cold mountain air is all around you. The glow inside the cave fades.\n\nThen the mountain shakes.",
+    text: "Pauso zaindu bat bestearen atzetik, atzeraka irteten zara kobazulotik, Damari begirada kendu gabe, mendiko aire hotzak inguratzen zaituen arte. Kobazulo barruko distira itzaltzen doa.\n\nOrduan, mendiak dardara egiten du.",
     choices: NEXT("endSugaar")
   },
   endSugaar: {
     image: "skyFire",
     noBack: true,
-    text: "Sugaar bursts out of the peak above you — a great serpent of fire with scales like glowing embers — and pours himself across the sky towards the valley, lighting up the snow for miles.",
+    text: "Sugaar zure gaineko tontorretik lehertzen da: suzko suge handi bat, ezkatak txingar goriak bezala. Zeruan zehar isurtzen da haranerantz, kilometroetan zehar elurra argituz.",
     choices: NEXT("endLightning")
   },
   endLightning: {
     image: "skyFire",
     noBack: true,
-    text: "Far below, at the edge of the forest, a bolt of fire strikes a little chimney. A window that was dark begins to glow, warm and gold.",
+    text: "Behean, urrun, basoaren ertzean, suzko tximista batek tximinia txiki bat jotzen du. Ilun zegoen leiho bat distiraka hasten da, epel eta urrekara.",
     choices: NEXT("endGabonGaua")
   },
   endGabonGaua: {
     type: "interstitial",
     text: "Gabon gaua",
     next: "endOlentzero",
-    hold: 2400
+    hold: 3800
   },
   endOlentzero: {
     image: "olentzero",
     noBack: true,
-    text: "Mari Domingi brings you to a cabin deep in the woods, full of sacks and parcels and the smell of charcoal. A fire roars in the hearth. A big man with a sooty face, a pipe and a txapela turns round — Olentzero.\n\n“So you're {name},” he says. “Mari Domingi told me everything.”",
+    text: "Mari Domingik basoaren barruko txabola batera eramaten zaitu, zaku, pakete eta ikatz usainez betea. Su bat dago orroka sutondoan. Gizon handi bat, aurpegia kedarrez beltz, pipa eta txapela dituena, buelta ematen du: Olentzero.\n\n“Beraz, zu zara {name}”, dio. “Mari Domingik dena kontatu dit.”",
     choices: [
-      { label: "Ask how many presents there are", next: "endPresents" },
-      { label: "Ask if you can help", next: "endHelp" },
-      { label: "Say goodbye", next: "endBye" }
+      { label: "Galdetu zenbat opari dauden", next: "endPresents" },
+      { label: "Galdetu ea lagundu dezakezun", next: "endHelp" },
+      { label: "Agur esan", next: "endBye" }
     ]
   },
   endPresents: {
     image: "olentzero",
     noBack: true,
-    text: "“How many?” Olentzero scratches his beard and leaves a black smudge. “One for every child in every village from here to the sea. And not one of them would be ready without that fire.”",
+    text: "“Zenbat?” Olentzerok bizarrari hazka egiten dio eta orban beltz bat uzten du. “Bat, hemendik itsasoraino dagoen herri bakoitzeko haur bakoitzarentzat. Eta horietako bat bera ere ez litzateke prest egongo su hori gabe.”",
     choices: [
-      { label: "Ask if you can help", next: "endHelp" },
-      { label: "Say goodbye", next: "endBye" }
+      { label: "Galdetu ea lagundu dezakezun", next: "endHelp" },
+      { label: "Agur esan", next: "endBye" }
     ]
   },
   endHelp: {
     image: "olentzero",
     noBack: true,
-    text: "He laughs and hands you a ball of string. For a while you tie up parcels side by side while Mari Domingi bosses you both about. Your knots are terrible. Nobody minds.",
-    choices: [{ label: "Say goodbye", next: "endBye" }]
+    text: "Barre egin eta lokarri-mataza bat ematen dizu. Denbora batez, paketeak lotzen dituzue elkarren ondoan, Mari Domingik bioi aginduak ematen dizkizuen bitartean. Zure korapiloak izugarri txarrak dira. Inori ez zaio axola.",
+    choices: [{ label: "Agur esan", next: "endBye" }]
   },
   endBye: {
     image: "olentzero",
     noBack: true,
-    text: "“Eskerrik asko, {name}. Now, home with you — before your aitona notices you're missing!”",
+    text: "“Eskerrik asko, {name}. Orain, etxera! Zure aitona falta zarela konturatu baino lehen!”",
     choices: NEXT("endHome")
   },
   endHome: {
     image: "baserriNight",
     noBack: true,
-    text: s => "Mari Domingi walks you to the edge of the trees. The windows of the baserri are glowing. Inside, the Gabon-subila is burning in the hearth" +
-      (s.kind.log ? " — the very log you helped aitona drag through the snow" : "") +
-      ". Nobody seems to have noticed how long you were gone.",
+    text: s => "Mari Domingik basoaren ertzeraino laguntzen dizu. Baserriko leihoek distira egiten dute. Barruan, Gabon-subila erretzen ari da sutondoan" +
+      (s.kind.log ? ", aitonari elurretan zehar eramaten lagundu zenion enbor bera" : "") +
+      ". Badirudi inor ez dela konturatu zenbat denbora egon zaren kanpoan.",
     choices: NEXT("endMorning")
   },
   endMorning: {
     image: "baserriNight",
     noBack: true,
-    text: "You fall asleep to the crackle of the log. And in the morning, beside the hearth, there's a little parcel with your name on it, tied with very bad knots.\n\n(What's inside — still to decide.)",
+    text: "Enborraren kraskarekin hartzen duzu loa. Eta goizean, sutondoaren ondoan, pakete txiki bat dago zure izenarekin, korapilo oso txarrekin lotuta.\n\n(Barruan zer dagoen: erabakitzeko.)",
     choices: NEXT("endCard")
   },
   endCard: {
     type: "interstitial",
     text: "Amaiera",
     next: "endFinal",
-    hold: 2400
+    hold: 3800
   },
   endFinal: {
     image: "ending",
     noBack: true,
-    text: "Thank you for playing.",
+    text: "Eskerrik asko jolasteagatik.",
     choices: [
-      { label: "Read about the story", next: "aboutScreen" },
+      { label: "Istorioari buruz irakurri", next: "aboutScreen" },
       { label: "Menura itzuli", next: "menu" }
     ]
   }
@@ -1602,57 +1638,57 @@ const story = {
 
 // ---------- SHARED CHOICE LISTS ----------
 const MD_QUESTIONS = [
-  { label: "“Can't we just light it again with matches?”", when: s => !s.flags.mdMatches, next: "mdMatches" },
-  { label: "“Who are you?”", when: s => !s.flags.mdWho, next: "mdWho" },
-  { label: "“Why me?”", when: s => !s.flags.mdWhy, next: "mdWhy" },
-  { label: "“What do I have to do?”", when: s => !s.flags.mdPlan, next: "mdPlan" },
-  { label: "Set off", when: s => s.flags.mdPlan, next: "clearingFirst" }
+  { label: "“Ezin al dugu berriro piztu pospolo batekin?”", when: s => !s.flags.mdMatches, next: "mdMatches" },
+  { label: "“Nor zara zu?”", when: s => !s.flags.mdWho, next: "mdWho" },
+  { label: "“Zergatik ni?”", when: s => !s.flags.mdWhy, next: "mdWhy" },
+  { label: "“Zer egin behar dut?”", when: s => !s.flags.mdPlan, next: "mdPlan" },
+  { label: "Bidean abiatu", when: s => s.flags.mdPlan, next: "clearingFirst" }
 ];
 
 // The clearing. `done` dims a place once its business is finished (it can still be visited).
 const LOCATIONS = [
-  { label: s => `The Lady's cave on ${peak(s).name}`, when: s => s.mari.revealed, next: s => peak(s).id + "Climb" },
-  { label: "The path into the deep forest", next: "basajaunStart", done: s => s.quests.basajaun === "resolved" },
-  { label: "The hill with the little hermitage", next: "atarrabiPath", done: s => s.quests.atarrabi === "resolved" },
-  { label: "The firelight in the high meadow", next: "sorginakPath", done: s => s.quests.sorginak === "resolved" },
-  { label: "The shepherd's hut on the high pasture", when: s => s.found.hut, next: "hutPath", done: s => s.kind.lambs },
-  { label: "The riverbank by the old bridge", when: s => s.found.river, next: s => s.kind.comb ? "laminaRevisit" : "riverBank", done: s => s.kind.comb },
-  { label: "The old mill", when: s => s.found.mill, next: s => (s.kind.galtza || s.flags.galtzaShut) ? "millRevisit" : "millDoor", done: s => s.kind.galtza },
-  { label: "A stranger waiting at the crossroads", when: s => mainDone(s) >= 1 && !s.flags.metMikelats && !s.flags.mikelatsCross && !s.mari.revealed, next: "mikelatsMeet" },
-  { label: "Talk to Mari Domingi", next: "mdHub" }
+  { label: s => `Damaren kobazuloa, ${peak(s).name} mendian`, when: s => s.mari.revealed, next: s => peak(s).id + "Climb" },
+  { label: "Baso sakonerako bidea", next: "basajaunStart", done: s => s.quests.basajaun === "resolved" },
+  { label: "Ermita txikiko muinoa", next: "atarrabiPath", done: s => s.quests.atarrabi === "resolved" },
+  { label: "Goiko larreko su-argia", next: "sorginakPath", done: s => s.quests.sorginak === "resolved" },
+  { label: "Goiko larreko artzain-txabola", when: s => s.found.hut, next: "hutPath", done: s => s.kind.lambs },
+  { label: "Zubi zaharreko ibaiertza", when: s => s.found.river, next: s => s.kind.comb ? "laminaRevisit" : "riverBank", done: s => s.kind.comb },
+  { label: "Errota zaharra", when: s => s.found.mill, next: s => (s.kind.galtza || s.flags.galtzaShut) ? "millRevisit" : "millDoor", done: s => s.kind.galtza },
+  { label: "Bidegurutzean zain dagoen arrotz bat", when: s => mainDone(s) >= 1 && !s.flags.metMikelats && !s.flags.mikelatsCross && !s.mari.revealed, next: "mikelatsMeet" },
+  { label: "Mari Domingirekin hitz egin", next: "mdHub" }
 ];
 
 const BASAJAUN_FIRE_CHOICES = [
-  { label: "Ask him straight away about Olentzero's fire", next: "basajaunTooSoon" },
-  { label: "Wait quietly, and listen to the forest", next: "basajaunWait" },
-  { label: "Offer him the bread Joanes gave you", when: s => s.items.bread, next: "basajaunBread", effect: { useItem: "bread" } },
-  { label: "Offer him your bag of sweets", when: s => s.items.sweets, next: "basajaunSweets", effect: { useItem: "sweets" } },
-  { label: "Get up and leave", next: "basajaunLeave", effect: { decline: "basajaun" } }
+  { label: "Galdetu berehala Olentzeroren suari buruz", next: "basajaunTooSoon" },
+  { label: "Itxaron isilik, basoari entzuten", next: "basajaunWait" },
+  { label: "Eskaini Joanesek emandako ogia", when: s => s.items.bread, next: "basajaunBread", effect: { useItem: "bread" } },
+  { label: "Eskaini zure gozoki-poltsa", when: s => s.items.sweets, next: "basajaunSweets", effect: { useItem: "sweets" } },
+  { label: "Altxatu eta alde egin", next: "basajaunLeave", effect: { decline: "basajaun" } }
 ];
 
 const JOANES_LEAVING = [
-  { label: "Give him your woolly hat", when: s => s.items.hat, next: "joanesHat" },
-  { label: "Go back down to the forest path", next: "basajaunStart" },
+  { label: "Eman zure artilezko txanoa", when: s => s.items.hat, next: "joanesHat" },
+  { label: "Basoko bidera jaitsi", next: "basajaunStart" },
   TO_CLEARING
 ];
 
 const SORGINAK_APPROACH = [
-  { label: "Hide behind a tree and watch", next: "sorginakHide" },
-  { label: "Walk into the firelight", next: s => s.items.eguzkilore ? "sorginakFlower" : "sorginakApproach" },
-  { label: "Run back down the hill", next: "sorginakDeclined", effect: { decline: "sorginak" } }
+  { label: "Zuhaitz baten atzean ezkutatu eta begiratu", next: "sorginakHide" },
+  { label: "Su-argira sartu", next: s => s.items.eguzkilore ? "sorginakFlower" : "sorginakApproach" },
+  { label: "Muinoan behera ihes egin", next: "sorginakDeclined", effect: { decline: "sorginak" } }
 ];
 
 const GALTZA_JOBS = [
-  { label: "“Tidy up the mill!”", when: s => !s.flags.galtzaTidy, next: "galtzaTidy" },
-  { label: "“Take firewood to Mari Domingi in the clearing!”", next: "galtzaWood" },
-  { label: "“Clear all the snow off the road to the village!”", next: "galtzaRoad" },
-  { label: "Try to shut them back in the needle case", next: "galtzaShut" }
+  { label: "“Errota garbitu!”", when: s => !s.flags.galtzaTidy, next: "galtzaTidy" },
+  { label: "“Eraman egurra Mari Domingiri, soilgunera!”", next: "galtzaWood" },
+  { label: "“Kendu elur guztia herrirako bidetik!”", next: "galtzaRoad" },
+  { label: "Saiatu orratz-ontzian sartzen berriro", next: "galtzaShut" }
 ];
 
 const MARI_GREETINGS = [
-  { label: "“Good evening, my lady. I'm sorry to disturb you.” [zu]", next: "mariFailHika", effect: { mariFail: true, learnFact: "hika" } },
-  { label: "“Good evening, Mari. I've come to ask thee for help.” [hi]", next: "mariCave2" },
-  { label: "Bow low and say nothing", next: "mariBow" }
+  { label: "“Gabon, andrea. Barkatu molestatzea. Zure laguntza eske etorri naiz.” [zu]", next: "mariFailHika", effect: { mariFail: true, learnFact: "hika" } },
+  { label: "“Gabon, Mari. Hire laguntza eske etorri naun.” [hi]", next: "mariCave2" },
+  { label: "Burua makurtu eta ezer ez esan", next: "mariBow" }
 ];
 
 // ---------- SCENES ----------
@@ -1938,19 +1974,19 @@ function showInteractive(node, area) {
     const thisId = currentId;
     setTimeout(() => {
       if (currentId === thisId) goTo(node.next);
-    }, node.hold || 2200);
+    }, node.hold || 3500);
     return;
   }
 
   if (node.type === "nameInput") {
     const row = document.createElement("form");
     row.className = "name-row";
-    row.innerHTML = `<input class="name-input" id="nameField" placeholder="Your name" enterkeyhint="go" autocomplete="off" />
+    row.innerHTML = `<input class="name-input" id="nameField" placeholder="Zure izena" enterkeyhint="go" autocomplete="off" />
                       <button class="name-submit" id="nameSubmit" type="submit">→</button>`;
     area.appendChild(row);
     row.addEventListener("submit", e => {
       e.preventDefault();
-      const name = document.getElementById("nameField").value.trim() || "friend";
+      const name = document.getElementById("nameField").value.trim() || "laguna";
       goTo(node.next, { name });
     });
     return;
@@ -1972,7 +2008,7 @@ function showInteractive(node, area) {
     if (done) {
       const sub = document.createElement("span");
       sub.className = "sub";
-      sub.textContent = "visited";
+      sub.textContent = "bisitatuta";
       btn.appendChild(sub);
     }
     btn.onclick = () => { choice.back ? goBack() : goTo(val(choice.next), choice.effect); };
