@@ -202,6 +202,13 @@
     display: flex;
     flex-direction: column;
   }
+  /* Eyelids for falling asleep: two curved, soft-edged lids that close over the whole screen. */
+  #eyelids { position: fixed; inset: 0; z-index: 100; pointer-events: none; overflow: hidden; }
+  #eyelids.active { pointer-events: auto; }   /* no tapping while the eyes are closing */
+  #eyelids .lid { position: absolute; left: -15%; right: -15%; height: 62%; background: #050403; box-shadow: 0 0 60px 40px #050403; }
+  #eyelids .lid-top { top: 0; border-radius: 0 0 50% 50% / 0 0 45% 45%; transform: translateY(calc(-100% - 140px)); }
+  #eyelids .lid-bottom { bottom: 0; border-radius: 50% 50% 0 0 / 45% 45% 0 0; transform: translateY(calc(100% + 140px)); }
+
   .card { transition: opacity 0.18s ease; }
   .card.swapping { opacity: 0; }
   .reread-btn {
@@ -344,6 +351,7 @@
 <div class="dev-tag">vertical slice — engine test</div>
 
 <audio id="menuMusic" loop preload="auto"></audio>
+<div id="eyelids" aria-hidden="true" hidden><div class="lid lid-top"></div><div class="lid lid-bottom"></div></div>
 <div class="book">
   <div class="scene-wrap">
     <div class="scene" id="scene"></div>
@@ -596,29 +604,35 @@ const story = {
     choices: [
       { label: "Leihotik begiratu baso elurtura", next: "dayCarWindow" },
       { label: "Gurasoei baserriari buruz galdetu", next: "dayCarHouse" },
-      { label: "Begiak itxi eta lo egin", next: "dayArrival" }
+      { label: "Begiak itxi eta lo egin", next: "dayArrival", sleep: "car" }
     ]
   },
   dayCarWindow: {
     image: "wildLog",
     text: "Zuhaitzen artean, une batez, zerbait erraldoi eta iletsua ikusten duzula iruditzen zaizu, bide ertzean zutik, autoa pasatzen ikusten. Begiak kliskatu, eta zuhaitz-enbor zahar bat besterik ez da. Seguruenik.",
-    choices: NEXT("dayArrival")
+    choices: [{ label: "A zer logura…", next: "dayArrival", sleep: "car" }]
   },
   dayCarHouse: {
     image: "askParents",
     text: "“Etxeak hirurehun urte baino gehiago ditu”, dio amak. “Bere izena du, baserri zahar guztiek bezala. Denbora luzez, hemengo jendeak etxearen izenez deitzen zion gure familiari, ez abizenez.”\n\nEtxe batek bere izena. Bitxia.",
-    choices: NEXT("dayArrival", { lore: "etxeIzena" })
+    choices: [{ label: "A zer logura…", next: "dayArrival", effect: { lore: "etxeIzena" }, sleep: "car" }]
   },
   dayArrival: {
     image: "baserri",
     text: "Horra baserria. zihurrenik gabonetan ere lekak edo babarrunak jango ditugula. Ezin txakurrarekin jolastu, jostailurik ez, eta okerrena, dinosaurioen garaiko telebista zahar bat...",
-    choices: NEXT("dayStormNight")
+    choices: NEXT("dayBored")
+  },
+  // First night at the farm: the child falls asleep (eyelids), and the storm wakes them.
+  dayBedtime: {
+    image: "stormNight",
+    text: "Gaua iristen da. Ohe handi eta hotz batean zaude, manta astunen azpian, egurrezko sabaiari begira. Etxeak karraska egiten du, eta kanpoan haizea hasi da.\n\n«Etxe honek hitz egiten du» pentsatzen duzu.",
+    choices: [{ label: "Begiak itxi", next: "dayStormNight", sleep: "night" }]
   },
   // Tonight's storm is the one that puts out Olentzero's fire. Whichever choice the child makes,
   // they see a light on the mountain go out — Mari Domingi pays this off when they meet.
   dayStormNight: {
     image: "stormNight",
-    text: "Gau horretan iristen da ekaitza. Haizeak orroka egiten du baserri zaharraren inguruan, kontraleihoek kolpeka jotzen dute, eta etxe osoak karraska egiten du, itsasoko ontzi batek bezala.",
+    text: "Kolpe batek esnatzen zaitu. Ekaitza iritsi da: haizeak orroka egiten du baserri zaharraren inguruan, kontraleihoek kolpeka jotzen dute, eta etxe osoak karraska egiten du, itsasoko ontzi batek bezala.",
     choices: [
       { label: "Mantak burura arte igo", next: "dayStormShutters" },
       { label: "Jaiki eta leihotik begiratu", next: "dayStormWindow" }
@@ -638,13 +652,19 @@ const story = {
   dayNextDay: {
     type: "interstitial",
     text: "Abenduaren 24a",
-    next: "dayBored",
+    next: "dayStairsAgain",
     hold: 3500
+  },
+  // Day two opens on the same creaking stairs: the attic that dayBored set up is right there.
+  dayStairsAgain: {
+    image: "baserriInside",
+    text: "Goizean, ekaitza joana da, eta elurra leihoetaraino iristen da. Jaisterakoan, eskailerek karraska egiten dute berriro, atzo bezala. Goian, ganbarako ate txikia itxita dago, beti bezala. Gurasoak lanpetuta dabiltza sukaldean.",
+    choices: NEXT("dayChoice")
   },
   dayBored: {
     image: "baserriInside",
     text: "Aiton-amonen etxea arraroa da. Eskailerek soinua ateratzen dute hanka jartzen dudan bakoitzean, minagatik kexatuko balira bezela. Eta paretak ezagutzen ez ditudan pertsonen argazkiz beteak daude. Zihur ganbaran badutela jolasteko zerbait... Gurasoak beti dabiltza ganbaran dauden trasteei buruz hizketan...",
-    choices: [{ label: "Jarraitu", next: "dayChoice" }]
+    choices: [{ label: "Jarraitu", next: "dayBedtime" }]
   },
   dayChoice: {
     image: "baserriInside",
@@ -2148,6 +2168,7 @@ function renderChoices(choices, area, node) {
     }
     btn.onclick = () => {
       if (choice.toChoices) showChoiceStep(node);
+      else if (choice.sleep) SLEEPS[choice.sleep](val(choice.next), choice.effect);
       else if (choice.back) goBack();
       else goTo(val(choice.next), choice.effect);
     };
@@ -2155,6 +2176,58 @@ function renderChoices(choices, area, node) {
   });
   area.appendChild(choicesEl);
 }
+
+// ---------- FALLING ASLEEP ----------
+// Used twice: dozing off in the car (waking gently at the farm) and the first night at the
+// farm (startled awake by the storm). Each is written out on its own so it can be tuned
+// separately. Keyframes are [moment 0–1, how closed the eyes are: 0 open, 1 shut].
+function playLids(frames, ms) {
+  const [top, bottom] = document.querySelectorAll("#eyelids .lid");
+  const keyframes = sign => frames.map(([at, closed, easing]) => ({
+    offset: at,
+    easing: easing || "ease-in-out",
+    transform: `translateY(calc(${sign * (1 - closed) * 100}% + ${sign * (1 - closed) * 140}px))`
+  }));
+  const opts = { duration: ms, fill: "forwards" };
+  const done = a => a.finished.catch(() => {});   // an interrupted animation counts as finished
+  return Promise.all([done(top.animate(keyframes(-1), opts)), done(bottom.animate(keyframes(1), opts))]);
+}
+const pause = ms => new Promise(r => setTimeout(r, ms));
+async function withEyelids(run) {
+  const el = document.getElementById("eyelids");
+  el.querySelectorAll(".lid").forEach(l => l.getAnimations().forEach(a => a.cancel()));
+  el.hidden = false;
+  el.classList.add("active");
+  try { await run(); } catch (e) { /* never leave the player stuck behind closed eyes */ }
+  finally { el.classList.remove("active"); el.hidden = true; }
+}
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// The car: heavy eyelids, fighting it, drooping again, gone. Wakes slowly at the farm.
+function sleepInCar(next, effect) {
+  if (reducedMotion()) { goTo(next, effect); return; }
+  withEyelids(async () => {
+    await playLids([[0, 0], [0.25, 0.45], [0.38, 0.25], [0.62, 0.7], [0.72, 0.55], [1, 1]], 4200);
+    await pause(400);
+    goTo(next, effect);                 // the farm appears behind closed eyes
+    await pause(1600);
+    await playLids([[0, 1], [0.3, 0.55], [0.42, 0.8], [0.75, 0.3], [0.85, 0.42], [1, 0]], 3400);
+  });
+}
+
+// The first night: drifting off in a strange bed, a long dark, then BANG — eyes snap open.
+function sleepFirstNight(next, effect) {
+  if (reducedMotion()) { goTo(next, effect); return; }
+  withEyelids(async () => {
+    await playLids([[0, 0], [0.35, 0.6], [0.5, 0.4], [1, 1]], 3600);
+    await pause(1800);                  // the night passes
+    goTo(next, effect);
+    await pause(900);
+    await playLids([[0, 1, "ease-out"], [1, 0]], 220);
+  });
+}
+
+const SLEEPS = { car: sleepInCar, night: sleepFirstNight };
 
 // ---------- RENDER: MENU ----------
 function renderMenu() {
