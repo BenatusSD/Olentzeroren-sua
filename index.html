@@ -552,17 +552,17 @@ const story = {
   },
   introWinter: {
     image: "winterVillage",
-    text: "Negua gogor etorri da aurten. Gabon gaua laister helduko da, eta elur ekaitzak guztiz bildu ditu mendiak. Kea darie tximiniei, etxeak berotzeko saiakeren adierazle",
+    text: "Negua gogor etorri da aurten. Elurra gogoz botatzen dabil, eta gabon gaua iristear dela, zuriz jantzi dira mendi eta herriak.",
     choices: [{ label: "Jarraitu", next: "introSubila" }]
   },
   introSubila: {
     image: "darkHearth",
-    text: "Diotenez, Euskal Herrian, sua gabon gau guztian zehar mantentzen zen piztuta, abereak, etxea edo pertsonak berak ere babesteko. Subila edo Sukileroa deitzen zitzaion, edo, beste leku batzuetan Olentzero-enborra.",
+    text: "Diotenez, Euskal Herrian, sua gabon gau guztian zehar mantentzen zen piztuta; abereak, etxea edo pertsonak berak ere babesteko. Subila edo Sukileroa deitzen zitzaion, edo, beste leku batzuetan, Olentzero-enborra.",
     choices: [{ label: "Jarraitu", next: "introSpecialFire" }]
   },
   introSpecialFire: {
     image: "fireHearth",
-    text: "Olentzero eta Mari Domingik ere badute beraien sua. Su berezia itzaltzen ez dena. Neguko gau luzeetan piztuta mantentzen dena, argi biziz, gauean zehar lanean jarraitzeko. Opariak gabonetarako prest edukitzeko modu bakarra dute.",
+    text: "Olentzero eta Mari Domingik ere badute beraien sua. Su berezia, itzaltzen ez dena. Neguko egun ilunenetan ere piztuta mantentzen dena, argi biziz, gauean zehar lanean jarraitzeko. Opariak gabonetarako prest edukitzeko modu bakarra dute.",
     // The prologue stops here on purpose: a fire that "never goes out" is the hook. The child
     // sees it go out from the window on the storm night, and Mari Domingi tells the rest.
     choices: [{ label: "Jarraitu", next: "dayZero" }]
@@ -571,17 +571,23 @@ const story = {
   dayZero: {
     type: "interstitial",
     text: "Abenduaren 23a",
-    next: "dayHome",
-    hold: 3500
+    next: "dayMorning",
+    hold: 3200
+  },
+  //I am adding an extra slide manually to allow the morning scene to settle better//
+  dayMorning: {
+    image: "goizekoelurra",
+    text: "Goizak argitu du, eta elurrak herria guztiz estalia du. «Dena zuri dago» pentsatzen duzu. «Behingoan elurra pila egin du eta guk baserrira joan behar dugu gabonak pasatzera». Gurasoak lanpetuta dabiltza. \u201cMaleta prestatu al duzu? berandu gabiltza\u201d galdetzen dizute",
+    choices: NEXT("dayHome")
   },
   dayHome: {
-    image: "goizekoelurra",
-    text: 'Elurra ari du kanpoan. "Maleta prestatu al duzu?" galdetzen dute gurasoek. \u201cEz dakit zertarako joan behar dugun baserrira gabonetan, herrian lagunekin egon beharrean\u201d pentsatzen duzu, marmarka. "Bai, prestatu dut..."',
+    image: "packBag",
+    text: "\u201cbai, prestatu dut!\u201d erantzuten duzu marmarka. Gurasoek motxila trastez bete dute, eta gauza garrantzitsuetarako lekurik ez duzu ia. «ea, zer hartuko dut...»",
     // Whatever the child packs turns out useful somewhere later — there's no wrong answer.
     choices: [
-      { label: "Linterna sartu maletan", next: "dayCar", effect: { item: "torch" } },
-      { label: "Gozoki-poltsa bat sartu", next: "dayCar", effect: { item: "sweets" } },
-      { label: "Artilezko txanoa sartu", next: "dayCar", effect: { item: "hat" } }
+      { label: "🔦 Linterna sartu", next: "dayCar", effect: { item: "torch" } },
+      { label: "🍬 Goxoki-poltsa sartu", next: "dayCar", effect: { item: "sweets" } },
+      { label: "🧢 Artilezko txanoa sartu", next: "dayCar", effect: { item: "hat" } }
     ]
   },
   dayCar: {
