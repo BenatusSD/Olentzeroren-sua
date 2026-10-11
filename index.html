@@ -572,17 +572,17 @@ const story = {
     type: "interstitial",
     text: "Abenduaren 23a",
     next: "dayMorning",
-    hold: 3200
+    hold: 2800
   },
   //I am adding an extra slide manually to allow the morning scene to settle better//
   dayMorning: {
     image: "goizekoelurra",
-    text: "Goizak argitu du, eta elurrak herria guztiz estalia du. «Dena zuri dago» pentsatzen duzu. «Behingoan elurra pila egin du eta guk baserrira joan behar dugu gabonak pasatzera». Gurasoak lanpetuta dabiltza. \u201cMaleta prestatu al duzu? berandu gabiltza\u201d galdetzen dizute",
+    text: "Goizak argitu du, eta elurrak herria guztiz estalia du. «Dena zuri dago» ari zara pentsatzen. «Behingoan elurra egin du eta guk baserrira joan behar dugu gabonak pasatzera». Gurasoak lanpetuta dabiltza gaur. \u201cMaleta prestatu al duzu?\u201d galdetzen dizute sukaldetik",
     choices: NEXT("dayHome")
   },
   dayHome: {
     image: "packBag",
-    text: "\u201cbai, prestatu dut!\u201d erantzuten duzu marmarka. Gurasoek motxila trastez bete dute, eta gauza garrantzitsuetarako lekurik ez duzu ia. «ea, zer hartuko dut...»",
+    text: "\u201cbai, prestatu dut!\u201d erantzuten duzu marmarka. Gurasoek motxila trastez bete dute, eta gauza garrantzitsuetarako lekurik ez duzu ia. Nola sartu benetan behar duzuna, hori bai zalantza. «ea, zer hartuko dut...»",
     // Whatever the child packs turns out useful somewhere later — there's no wrong answer.
     choices: [
       { label: "🔦 Linterna sartu", next: "dayCar", effect: { item: "torch" } },
@@ -592,20 +592,20 @@ const story = {
   },
   dayCar: {
     image: "carRoad",
-    text: "Egun osoa bidean pasako dugu hemen. \u201cEderra dugu elurte honekin, ez dakit iritsiko garen!\u201d dio aitak. Ez dakit zergatik kexatzen diren helduak elurraz. Gidatu beharrean elurretan jolasean arituko bagina, alde ederrean.... ederra litzateke urteko elurra horrela egingo balu",
+    text: "«Beti kotxean, ezin ia ezer ikusi» pentsatzen duzu. Gurasoak, beraien istorioekin. \u201cEderra dugu elurte honekin, ez dakit baserrira iritsiko garen!\u201d dio aitak. «Ez dakit zergatik kexatzen diren helduak hainbeste elurraz. Gidatu beharrean elurretan jolasean arituko bagina, alde ederrean.... ederra litzateke urtero elurra horrela egingo balu». Zelai guztiak elurrez estalirik daude.",
     choices: [
-      { label: "Leihotik begiratu baso elurtera", next: "dayCarWindow" },
-      { label: "Galdetu nolakoa den baserria", next: "dayCarHouse" },
+      { label: "Leihotik begiratu baso elurtura", next: "dayCarWindow" },
+      { label: "Gurasoei baserriari buruz galdetu", next: "dayCarHouse" },
       { label: "Begiak itxi eta lo egin", next: "dayArrival" }
     ]
   },
   dayCarWindow: {
-    image: "carRoad",
+    image: "wildLog",
     text: "Zuhaitzen artean, une batez, zerbait erraldoi eta iletsua ikusten duzula iruditzen zaizu, bide ertzean zutik, autoa pasatzen ikusten. Begiak kliskatu, eta zuhaitz-enbor zahar bat besterik ez da. Seguruenik.",
     choices: NEXT("dayArrival")
   },
   dayCarHouse: {
-    image: "carRoad",
+    image: "askParents",
     text: "“Etxeak hirurehun urte baino gehiago ditu”, dio amak. “Bere izena du, baserri zahar guztiek bezala. Denbora luzez, hemengo jendeak etxearen izenez deitzen zion gure familiari, ez abizenez.”\n\nEtxe batek bere izena. Bitxia.",
     choices: NEXT("dayArrival", { lore: "etxeIzena" })
   },
