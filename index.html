@@ -159,13 +159,14 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: linear-gradient(180deg, #0e1a1f 0%, #16241f 55%, #0b1310 100%);
+    background: #1d1712;   /* the card's colour, so a strip below a short image blends in */
   }
   .scene svg { width: 100%; height: 100%; display: block; }
-  .img-wrap { position: relative; width: 100%; height: 100%; }
-  /* When the screen shape doesn't match the image, crop more from the bottom (it sits under
-     the text card anyway) than from the top, so the main action stays in view. */
-  .scene-img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
+  .img-wrap { position: relative; width: 100%; }
+  /* Images are never cropped at the sides or top: they fit the full width, pinned to the top.
+     Only the bottom can be lost (under the text card, or off a short screen), so everything
+     that matters belongs in the upper three-fifths of the picture. */
+  .scene-img { width: 100%; height: auto; display: block; }
   .flame-flicker {
     position: absolute;
     left: 24%; top: 26%; width: 46%; height: 48%;
@@ -201,6 +202,19 @@
     display: flex;
     flex-direction: column;
   }
+  .card { transition: opacity 0.18s ease; }
+  .card.swapping { opacity: 0; }
+  .reread-btn {
+    align-self: flex-start;
+    margin-top: 12px;
+    background: none; border: none; padding: 4px 2px;
+    color: var(--parchment-dim);
+    font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 13px;
+    cursor: pointer;
+  }
+  .reread-btn:hover, .reread-btn:focus-visible { color: var(--gold); }
+  #interactiveArea { display: flex; flex-direction: column; }
+
   .card::before {
     content: "";
     position: absolute;
@@ -1307,6 +1321,7 @@ const story = {
   },
   sorginakApproach: {
     image: "sorginakFire",
+    ask: "“Zer esaten dute gutaz behean, herrietan?”",
     text: "Sua epela da. Gertutik, sorginak... emakumeak besterik ez dira. Zaharrak eta gazteak, masail gorriak eta begi zorrotzak dituztenak, belar usaina duen lapiko bat eragiten. Zaharrenak goitik behera begiratzen dizu. “Tira, bada. Zer esaten dute gutaz behean, herrietan?”",
     choices: [
       { label: "“Ezer ez! Ezer txarrik ez.”", next: "sorginakFib" },
@@ -1495,6 +1510,7 @@ const story = {
   // tags are only reminders — in Basque, the verb forms themselves should give it away.
   mariCave1: {
     image: "mariCave",
+    ask: "“Nor dator nire atarira Gabon gauean?”",
     noBack: true, clearHistory: true,
     text: "Kobazuloaren sarreran bertan, harri baten gainean, urrezko ile luzeko emakume bat dago eserita, urrezko orrazi batekin poliki orrazten. Kobazulo osoak distira egiten du haren inguruan, harria bera epela balitz bezala. Ez dirudi harrituta dagoenik zu ikusteagatik.\n\n“Nor dator nire atarira Gabon gauean?”",
     choices: s => MARI_GREETINGS
@@ -1521,6 +1537,7 @@ const story = {
   },
   mariCave3: {
     image: "mariCave",
+    ask: s => honesty(s).question,
     noBack: true,
     text: s => "Buruarekin baietz egiten du, eta zerbait leuntzen zaio aurpegian. Gero begiak zorrozten zaizkio berriro.\n\n" + honesty(s).question,
     choices: s => [
@@ -1531,6 +1548,7 @@ const story = {
   // Honesty gets as many tries as it takes — the lesson is the point, not the failure.
   mariCave3Lie: {
     image: "mariCave",
+    ask: s => honesty(s).question,
     noBack: true,
     text: s => hika(s,
       "Kobazuloko sua txikitu eta urdindu egiten da. Marik ez du ezer esaten. Begiratu besterik ez dizu egiten... eta isiltasuna edozein oihu baino okerragoa da.\n\n“Ezin diat gezurrik jasan, haurra. Ezta harrokeriarik ere. Pentsa ezak berriro.”",
@@ -1973,9 +1991,62 @@ function visibleChoices(node) {
 }
 
 // ---------- RENDER: STORY NODE ----------
+// Slides with a real choice (two or more options) come in two steps: first the story text
+// with one "Jarraitu", then a short card with a question and the options. So nobody can
+// pick an option before the text has been read, and long text never shares the card with
+// three or four buttons. Slides with a single way on stay as one step. The image doesn't
+// change between the steps. `choicePhase` is true while the options are showing.
+let choicePhase = false;
+
 function renderNode(node) {
   renderScene(node.image);
+  choicePhase = false;
+  renderCard(node, true);
+}
 
+const isTwoStep = node => !node.type && visibleChoices(node).length >= 2;
+
+// The question on the choice step: a slide's own `ask` (or its `prompt`), otherwise
+// "Zer erantzungo duzu?" when every option is something said, else "Zer egingo duzu?".
+function choiceQuestion(node, choices) {
+  const own = node.ask || node.prompt;
+  if (own) return interpolate(val(own));
+  const spoken = choices.every(c => /^[“"]/.test(String(val(c.label)).trim()));
+  return spoken ? "Zer erantzungo duzu?" : "Zer egingo duzu?";
+}
+
+// Swaps what the card shows without touching the image: a quick fade of the card alone.
+function swapCard(fill) {
+  const card = document.getElementById("card");
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { fill(); return; }
+  card.classList.add("swapping");
+  setTimeout(() => { fill(); card.classList.remove("swapping"); }, 180);
+}
+
+function showStoryStep(node) {
+  swapCard(() => { choicePhase = false; updateTopBar(); renderCard(node, false); });
+}
+
+function showChoiceStep(node) {
+  swapCard(() => {
+    choicePhase = true;
+    updateTopBar();
+    stopNarration();
+    document.getElementById("listenRow").style.display = "none";
+    const choices = visibleChoices(node);
+    const area = document.getElementById("interactiveArea");
+    area.innerHTML = "";
+    document.getElementById("storyText").textContent = choiceQuestion(node, choices);
+    renderChoices(choices, area);
+    const again = document.createElement("button");
+    again.className = "reread-btn";
+    again.textContent = "↺ Irakurri berriro";
+    again.onclick = () => showStoryStep(node);
+    area.appendChild(again);
+  });
+}
+
+function renderCard(node, firstTime) {
   const listenRow = document.getElementById("listenRow");
   stopNarration();
 
@@ -2001,7 +2072,7 @@ function renderNode(node) {
         }
         play();
       };
-      if (state.audioEnabled) play();
+      if (state.audioEnabled && firstTime) play();
     } else {
       listenRow.style.display = "block";
       listenRow.innerHTML = '<p class="listen-note">🔇 narration not available on this device</p>';
@@ -2041,15 +2112,18 @@ function showInteractive(node, area) {
     return;
   }
 
-  if (node.prompt) {
-    const p = document.createElement("p");
-    p.className = "map-title";
-    p.textContent = interpolate(val(node.prompt));
-    area.appendChild(p);
+  if (isTwoStep(node)) {
+    // Step one: the story, and a single way on to the choice.
+    renderChoices([{ label: "Jarraitu", toChoices: true }], area, node);
+    return;
   }
+  renderChoices(visibleChoices(node), area);
+}
+
+function renderChoices(choices, area, node) {
   const choicesEl = document.createElement("div");
   choicesEl.className = "choices";
-  visibleChoices(node).forEach(choice => {
+  choices.forEach(choice => {
     const btn = document.createElement("button");
     const done = choice.done && choice.done(state);
     btn.className = "choice-btn" + (done ? " visited" : "");
@@ -2060,7 +2134,11 @@ function showInteractive(node, area) {
       sub.textContent = "bisitatuta";
       btn.appendChild(sub);
     }
-    btn.onclick = () => { choice.back ? goBack() : goTo(val(choice.next), choice.effect); };
+    btn.onclick = () => {
+      if (choice.toChoices) showChoiceStep(node);
+      else if (choice.back) goBack();
+      else goTo(val(choice.next), choice.effect);
+    };
     choicesEl.appendChild(btn);
   });
   area.appendChild(choicesEl);
@@ -2118,6 +2196,7 @@ function renderMenu() {
 
 // ---------- MAIN RENDER ----------
 function render() {
+  choicePhase = false;   // every new page starts on its story step (before the top bar is drawn)
   document.getElementById("nodeIdTag").textContent =
     `${currentId} · favour ${favour(state)}/${FAVOUR_NEEDED} · facts ${state.facts.length}/3`;
   updateTopBar();
@@ -2164,6 +2243,7 @@ function goTo(nextId, effect) {
 }
 
 function goBack() {
+  if (choicePhase) { showStoryStep(story[currentId]); return; }   // re-read, not undo
   if (history.length === 0) return;
   const prev = history.pop();
   currentId = prev.id;
@@ -2229,7 +2309,7 @@ function updateTopBar() {
   const node = story[currentId];
   const locked = !!(node && node.noBack);
   const setEnabled = (id, on) => document.getElementById(id).classList.toggle("disabled", !on);
-  setEnabled("topBack", history.length > 0 && !locked);
+  setEnabled("topBack", choicePhase || (history.length > 0 && !locked));
   setEnabled("topMap", !!state.flags.reachedMap && !locked && currentId !== "map");
   setEnabled("topHints", currentId !== "menu" && currentId !== "hintsScreen");
   document.getElementById("topMute").textContent = state.audioEnabled ? "🔇" : "🔈";
