@@ -671,7 +671,7 @@ const story = {
     text: "Agian ganbarara joan beharko nuke, orain gurasoak lanpetuta daudela. Gurasoek kanpoan jolasteko esan didate lehen... ez legoke gaizki elurrarekin zerbait egitea baina... ez dakit ba",
     choices: [
       { label: "❄️ Kanpora joan, elurrarekin jolastera", next: "dayOutside" },
-      { label: "🚪 Ganbarara igo, gurasoak konturatu aurretik", next: "dayAttic" },
+      { label: "🚪 Ganbarara igo, ikertzera", next: "dayAttic" },
       { label: "👵 Amonarengana joan, sukaldera", next: "dayKitchen" }
     ]
   },
@@ -706,8 +706,8 @@ const story = {
     image: "kitchen",
     text: "Amona sukaldean dago, taloak egiten: arto-irinezko opil biribil eta lauak, burdina beroan erretzen. “Aspertuta dagoeneko?” dio barrez. Atzeko atearen ondoan, lore lehor eta arantzatsu bat dago zintzilik.",
     choices: [
-      { label: "Galdetu atearen ondoko loreari buruz", next: "dayKitchenFlower" },
-      { label: "Galdetu Olentzerori buruz", next: "dayKitchenOlentzero" },
+      { label: "Atearen ondoko loreari buruz galdetu", next: "dayKitchenFlower" },
+      { label: "Olentzerori buruz galdetu", next: "dayKitchenOlentzero" },
       { label: "Kanpora joan", next: "dayOutside" }
     ]
   },
@@ -716,7 +716,7 @@ const story = {
     text: "“Hori eguzkilorea da, eguzkiaren lorea. Gauza txarrak etxetik kanpo mantentzen ditu. Barrura sartu nahi duen izpiritu orok bere petalo zorrotz guztiak zenbatu behar ditu lehenengo... eta amaitu baino lehen, eguzkia ateratzen da!” Begi-keinu bat egiten dizu. “Leihoaren ertzean badago beste bat, nahi baduzu.”",
     effect: { lore: "eguzkilore" },
     choices: [
-      { label: "Eguzkilore soberakoa hartu", next: "dayKitchenMore", effect: { item: "eguzkilore" } },
+      { label: "Soberako eguzkilorea hartu", next: "dayKitchenMore", effect: { item: "eguzkilore" } },
       { label: "Leihoaren ertzean utzi", next: "dayKitchenMore" }
     ]
   },
@@ -730,21 +730,21 @@ const story = {
     image: "kitchen",
     text: "Amonak beste talo bat iraultzen du platerera. “Beste zerbait? Ala kanpora zoaz aire freskoa hartzera, gurasoek esan dizuten bezala?”",
     choices: [
-      { label: "Galdetu atearen ondoko loreari buruz", when: s => !s.lore.includes("eguzkilore"), next: "dayKitchenFlower" },
-      { label: "Galdetu Olentzerori buruz", when: s => !s.lore.includes("olentzero"), next: "dayKitchenOlentzero" },
+      { label: "Atearen ondoko loreari buruz galdetu", when: s => !s.lore.includes("eguzkilore"), next: "dayKitchenFlower" },
+      { label: "Olentzerori buruz galdetu", when: s => !s.lore.includes("olentzero"), next: "dayKitchenOlentzero" },
       { label: "Kanpora joan", next: "dayOutside" }
     ]
   },
   dayParents: {
     image: "attic",
-    text: "\u201cZer zabiltza hor goian?\u201d kaka zaharra, ezaltzuten beste ezer egiteko \u201c Irten zaitez kanpora, gero elurretara joan nahi duzula kexatzen zara eta\u201d",
+    text: "\u201cZer zabiltza hor goian?\u201d kaka zaharra, ez al zuten beste ezer egiteko? \u201c Irten zaitez kanpora, gero elurretara joan nahi duzula kexatzen zara eta\u201d",
     choices: [{ label: "Marmar artean kanpora ateratzen zara...", next: "dayOutside" }]
   },
   dayOutside: {
     image: "basoa",
-    text: "A zer nolako hotza. Zihurrenik elurra ere izoztua dagoela panpina egiteko. Ea basoan adar batzuk aurkitzen ditudan. Pixkat bat iluna dirudi, halabaina...",
+    text: "A zer nolako hotza. Elurra ere izoztuko zen. Panpina egiteko makil batzuk beharko ditut...",
     choices: [
-      { label: "Lehenengo, ikusi zertan ari den aitona egur-tegiaren ondoan", next: "dayAitonaLog" },
+      { label: "Aitonarengana joan, egurtegiaren ondoan", next: "dayAitonaLog" },
       { label: "Basora joan adar bila", next: "introMeetMariDomingi" }
     ]
   },
