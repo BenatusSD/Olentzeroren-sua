@@ -288,22 +288,7 @@
   .choice-btn.visited { opacity: 0.55; }
   .choice-btn .sub { display: block; font-family: 'Quicksand', sans-serif; font-weight: 500; font-size: 12px; color: var(--pine-light); margin-top: 2px; }
 
-  .register-toggle { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
-  .reg-opts { display: flex; align-items: center; gap: 10px; }
-  .reg-opt { font-size: 13px; font-weight: 600; color: var(--parchment-dim); transition: color 0.15s ease; }
-  .reg-opt.on { color: var(--parchment); font-weight: 700; }
-  .reg-track { position: relative; flex: none; width: 44px; height: 24px; border-radius: 12px; background: rgba(212,169,79,0.18); border: 1px solid rgba(212,169,79,0.5); }
-  .reg-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--gold); transition: left 0.18s ease; }
-  .register-toggle[aria-checked="true"] .reg-knob { left: 22px; }
-
-  .choice-btn.audio-attn {
-    border-color: var(--gold);
-    animation: attn-pulse 1.8s ease-in-out infinite;
-  }
-  @keyframes attn-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(224,138,66,0.55); }
-    50% { box-shadow: 0 0 0 9px rgba(224,138,66,0); }
-  }
+  .choice-btn.chosen { border-color: var(--gold); background: rgba(212,169,79,0.16); }   /* the last register picked */
 
   .name-row { display: flex; gap: 10px; margin-bottom: 4px; }
   .name-input {
@@ -406,6 +391,7 @@ state.register = (store.get(SETTINGS_KEY) || {}).register === "noka" ? "noka" : 
 function saveGame() {
   if (inGame && currentId !== "menu") store.set(SAVE_KEY, { currentId, state, history: history.slice(-40) });
 }
+const lastRegister = () => (store.get(SETTINGS_KEY) || {}).register;   // the parent's last choice
 function savedGame() {
   const d = store.get(SAVE_KEY);
   return d && d.state && d.currentId ? d : null;
@@ -418,9 +404,10 @@ if (new URLSearchParams(window.location.search).has("dev")) {
 // Story values (text, labels, next, choices, effects) can be plain values or functions of state.
 const val = v => (typeof v === "function" ? v(state) : v);
 
-// Mari speaks to the child in hika: toka if the reader is a boy, noka if a girl (the
-// "Erregistroa" switch on the main menu). Her lines keep both versions side by side.
-// The child always answers Mari in noka (she is a woman), whatever this setting says.
+// Mari and the grandparents speak to the child in hika: toka for a boy, noka for a girl,
+// chosen on the "registerChoice" screen before every new game. Their lines keep both
+// versions side by side. The child always answers Mari in noka (she is a woman), whatever
+// this setting says, and never speaks hika to the grandparents (that would be rude).
 const hika = (s, toka, noka) => (s.register === "noka" ? noka : toka);
 
 function interpolate(text) {
@@ -446,19 +433,19 @@ const favour = s => mainDone(s) * MAIN_QUEST_FAVOUR + Math.min(Object.keys(s.kin
 // three. Getting a rule wrong in the cave also teaches it, the hard way.
 const FACT_ORDER = ["hika", "noSit", "noBack"];
 const FACTS = {
-  hika:   "Mariri “hi” erabiliz hitz egin, familiari bezala — inoiz ez “zu”, arrotz bati bezala.",
+  hika:   "Mariri “hi” erabiliz hitz egin, lagunei bezala — inoiz ez “zu”, arrotz bati bezala.",
   noSit:  "Ez eseri inoiz Mariren aurrean, eserlekua eskaintzen badizu ere.",
   noBack: "Ez eman inoiz bizkarra Mariri. Atzeraka irten, aurpegiz bera begira, sartu zinen bide beretik."
 };
 const HINTS = {
   basajaun: {
-    hika:   "“Damarengana zoaz? Orduan, hitz egin iezaiozu argi eta garbi, zure amonari bezala: hi erabiliz, ez zu. Mendiak bezain zaharra da. Arrotzen fintasunak ez du ezer esan nahi berarentzat.”",
+    hika:   "“Damarengana zoaz? Orduan, hitz egin iezaiozu argi eta garbi, zure lagunei bezala: hi erabiliz, ez zu. Mendiak bezain zaharra da. Arrotzen fintasunak ez du ezer esan nahi berarentzat.”",
     noSit:  "“Damarengana zoaz? Orduan, gogoratu hau: bere kobazuloan inor ez da esertzen. Ez han ekaitzetik babesten diren artzainak, ezta ni neu ere. Egon zutik, nekatuta egonda ere.”",
     noBack: "“Damarengana zoaz? Orduan, bera uztean, ez eman bizkarra. Irten atzeraka, pausoz pauso, aurpegiz bera begira, sartu zinen bezala.”",
     none:   "“Badakizu dagoeneko nola egon Damaren aurrean. Ongi. Zoaz, eta ibili isil-isilik nire basoan.”"
   },
   atarrabi: {
-    hika:   "“Nire amarengana zoaz, beraz. Hitz egin iezaiozu hi erabiliz, familian egiten dugun bezala. Gure etxean inork ez dio inoiz zu esan: atea jotzen duen arrotz bat irudituko litzateke.”",
+    hika:   "“Nire amarengana zoaz, beraz. Hitz egin iezaiozu hi erabiliz, lagun bati bezala. Zu esanez gero, atea jotzen duen arrotz bat irudituko zenuke.”",
     noSit:  "“Nire amarengana zoaz, beraz. Eserlekua eskaintzen badizu, eskerrak eman, baina egon zutik. Ni neu ere ez naiz inoiz bere aurrean eseri.”",
     noBack: "“Nire amarengana zoaz, beraz. Joateko esaten dizunean, irten atzeraka, aurpegiz bera begira. Bizkarra ematea da egin dakiokeen lotsagabekeriarik handiena.”",
     none:   "“Nire amarengana zoaz, beraz. Eta badakizu dagoeneko nola portatu bere aurrean. Nik uste begiko izango zaituela.”"
@@ -470,13 +457,13 @@ const HINTS = {
     none:   "“Baina Damaren ohiturak ezagutzen dituzu dagoeneko, ezta? Aurrera, bada!”"
   },
   joanes: {
-    hika:   "“Bere biloba banintz bezala hitz egin zidan, eta nik ere berdin erantzun nion: hi erabiliz, ez zu. Amonak esana zidan hori zela zuzena, eta Damak irribarre egin zidan.”",
+    hika:   "“Bere biloba banintz bezala hitz egin zidan, hika. Eta nik ere hika erantzun nion, amonak irakatsi bezala, nahiz eta nire amonari inoiz ez nion horrela hitz egingo! Damak irribarre egin zidan.”",
     noSit:  "“Hain nengoen nekatuta, ezen ia harri baten gainean eseri bainintzen bere kobazuloan. Zerbaitek geldiarazi ninduen. Gero amonak esan zidan: inor ez da esertzen Damaren aurrean. Inor ez.”",
     noBack: "“Alde egin nuenean, atzeraka irten nintzen, aurpegiz bera begira, kobazulotik kanpora arte. Amonak esana zidan: ez eman inoiz bizkarra Damari.”",
     none:   "“Baina zuk badakizu dagoeneko dena Damari buruz, itxuraz.”"
   },
   lamina: {
-    hika:   "“Hitz egin Damari hi erabiliz, familiak egiten duen bezala. Ibaiko jendeak beti egin izan du horrela.”",
+    hika:   "“Hitz egin Damari hi erabiliz, lagunek egiten duten bezala. Ibaiko jendeak beti egin izan du horrela.”",
     noSit:  "“Damaren aurrean, egon zutik. Lamiok ere zutik egoten gara bere aurrean.”",
     noBack: "“Damari agur esatean, irten atzeraka, aurpegiz bera begira. Ez erakutsi inoiz bizkarra.”",
     none:   "“Baina Damaren ohiturak ezagutzen dituzu dagoeneko, nik uste. Ondo ibili, txikitxo.”"
@@ -542,6 +529,17 @@ const TO_CLEARING = { label: "Soilgunera itzuli", next: "map" };
 
 // ---------- STORY DATA ----------
 const story = {
+  // Before every new game the parent chooses how Mari and the grandparents speak hika to the
+  // child. No default: the game only starts once one is tapped (the last choice is highlighted).
+  registerChoice: {
+    image: "titleArt",
+    oneStep: true,
+    text: "Marik eta aitona-amonek hika egingo diote haurrari: toka mutil bati, noka neska bati.\n\nNor da haurra?",
+    choices: [
+      { label: "Mutila (toka)", next: "introWinter", effect: { register: "toka" }, chosen: () => lastRegister() === "toka" },
+      { label: "Neska (noka)", next: "introWinter", effect: { register: "noka" }, chosen: () => lastRegister() === "noka" }
+    ]
+  },
   infoScreen: {
     image: "empty",
     text: "This is a story where you choose what happens. Read each page, then tap what you want to do next.\n\n❓ opens your journal: everything you've learned on your journey.\n🗺 takes you back to the clearing, once you've found it.\n⬅ undoes your last choice — but not in Mari's cave!\n\nBest read together with a grown-up.",
@@ -639,12 +637,12 @@ const story = {
     ]
   },
   dayStormWindow: {
-    image: "stormNight",
+    image: "stormWindow",
     text: "Sudurra kristal hotzaren kontra jartzen duzu. Elurra alboka dabil hegan leihoaren aurretik. Urrun, mendian goian, argi txiki eta bero bat dago distiraka ilunpetan.\n\nBegira zaudela, dir-dir egiten du... dir-dir... eta itzali egiten da.",
     choices: [{ label: "Ohera itzuli", next: "dayNextDay" }]
   },
   dayStormShutters: {
-    image: "stormNight",
+    image: "stormWindow",
     effect: { flag: "stormShutters" },
     text: "Alferrik da. DANBA! Haizeak kontraleihoak zabal-zabalik irekitzen ditu, eta elurra zurrunbiloan sartzen da gelara. Ohetik salto egiten duzu ixteko... eta orduan ikusten duzu. Urrun, mendian goian, argi txiki eta bero bat dago distiraka ilunpetan.\n\nBegira zaudela, dir-dir egiten du... dir-dir... eta itzali egiten da.",
     choices: [{ label: "Leihoa itxi eta ohera itzuli", next: "dayNextDay" }]
@@ -704,7 +702,7 @@ const story = {
   },
   dayKitchen: {
     image: "kitchen",
-    text: "Amona sukaldean dago, taloak egiten: arto-irinezko opil biribil eta lauak, burdina beroan erretzen. “Aspertuta dagoeneko?” dio barrez. Atzeko atearen ondoan, lore lehor eta arantzatsu bat dago zintzilik.",
+    text: "Amona sukaldean dago, taloak egiten: arto-irinezko opil biribil eta lauak, burdina beroan erretzen. “Aspertu haiz dagoeneko?” dio barrez. Atzeko atearen ondoan, lore lehor eta arantzatsu bat dago zintzilik.",
     choices: [
       { label: "Atearen ondoko loreari buruz galdetu", next: "dayKitchenFlower" },
       { label: "Olentzerori buruz galdetu", next: "dayKitchenOlentzero" },
@@ -713,7 +711,9 @@ const story = {
   },
   dayKitchenFlower: {
     image: "eguzkilore",
-    text: "“Hori eguzkilorea da, eguzkiaren lorea. Gauza txarrak etxetik kanpo mantentzen ditu. Barrura sartu nahi duen izpiritu orok bere petalo zorrotz guztiak zenbatu behar ditu lehenengo... eta amaitu baino lehen, eguzkia ateratzen da!” Begi-keinu bat egiten dizu. “Leihoaren ertzean badago beste bat, nahi baduzu.”",
+    text: s => hika(s,
+      "“Hori eguzkilorea duk, eguzkiaren lorea. Gauza txarrak etxetik kanpo mantentzen ditik. Barrura sartu nahi duen izpiritu orok bere petalo zorrotz guztiak zenbatu behar ditik lehenengo... eta amaitu baino lehen, eguzkia ateratzen duk!” Begi-keinu bat egiten dizu. “Leihoaren ertzean bazegok beste bat, nahi baduk.”",
+      "“Hori eguzkilorea dun, eguzkiaren lorea. Gauza txarrak etxetik kanpo mantentzen ditin. Barrura sartu nahi duen izpiritu orok bere petalo zorrotz guztiak zenbatu behar ditin lehenengo... eta amaitu baino lehen, eguzkia ateratzen dun!” Begi-keinu bat egiten dizu. “Leihoaren ertzean bazegon beste bat, nahi badun.”"),
     effect: { lore: "eguzkilore" },
     choices: [
       { label: "Soberako eguzkilorea hartu", next: "dayKitchenMore", effect: { item: "eguzkilore" } },
@@ -722,13 +722,15 @@ const story = {
   },
   dayKitchenOlentzero: {
     image: "kitchen",
-    text: "“Olentzero? Ikazkina da. Urte osoan mendian bizi da, ikatza egiten, eta Gabon gauean herrietara jaisten da.” Leihotik mendi zuriari begiratzen dio. “Bitxia. Bart, ekaitzean, argi bat itzaltzen ikusi nuen han goian. Neskatoa nintzenetik ikusi izan dut argi hori negu guztietan.”",
+    text: s => hika(s,
+      "“Olentzero? Ikazkina duk. Urte osoan mendian bizi duk, ikatza egiten, eta Gabon gauean herrietara jaisten duk.” Leihotik mendi zuriari begiratzen dio. “Bitxia. Bart, ekaitzean, argi bat itzaltzen ikusi nian han goian. Neskatoa nintzenetik ikusi izan diat argi hori negu guztietan.”",
+      "“Olentzero? Ikazkina dun. Urte osoan mendian bizi dun, ikatza egiten, eta Gabon gauean herrietara jaisten dun.” Leihotik mendi zuriari begiratzen dio. “Bitxia. Bart, ekaitzean, argi bat itzaltzen ikusi ninan han goian. Neskatoa nintzenetik ikusi izan dinat argi hori negu guztietan.”"),
     effect: { lore: "olentzero" },
     choices: [{ label: "Jarraitu", next: "dayKitchenMore" }]
   },
   dayKitchenMore: {
     image: "kitchen",
-    text: "Amonak beste talo bat iraultzen du platerera. “Beste zerbait? Ala kanpora zoaz aire freskoa hartzera, gurasoek esan dizuten bezala?”",
+    text: "Amonak beste talo bat iraultzen du platerera. “Beste zerbait? Ala kanpora hoa aire freskoa hartzera, gurasoek esan bezala?”",
     choices: [
       { label: "Atearen ondoko loreari buruz galdetu", when: s => !s.lore.includes("eguzkilore"), next: "dayKitchenFlower" },
       { label: "Olentzerori buruz galdetu", when: s => !s.lore.includes("olentzero"), next: "dayKitchenOlentzero" },
@@ -745,16 +747,18 @@ const story = {
     text: "A zer nolako hotza. Elurra ere izoztuko zen. Panpina egiteko makil batzuk beharko ditut...",
     choices: [
       { label: "Aitonarengana joan, egurtegiaren ondoan", next: "dayAitonaLog" },
-      { label: "Basora joan adar bila", next: "introMeetMariDomingi" }
+      { label: "Basora joan adar bila", next: "forestMovement" }
     ]
   },
   dayAitonaLog: {
     image: "aitonaLog",
-    text: "Aitona enbor erraldoi eta korapilatsu batekin borrokan ari da, erdi elurpean. “Hau”, dio arnasestuka, “gure Gabon-subila da. Gure Gabonetako enborra. Gaur gauean sutara joango da eta gau osoan erreko da, etxea eta barruan dauden guztiak babesteko. Zure aitona-amonen aitona-amonek ere berdin egiten zuten.”",
+    text: s => hika(s,
+      "Aitona enbor erraldoi eta korapilatsu batekin borrokan ari da, erdi elurpean. “Hau”, dio arnasestuka, “gure Gabon-subila duk. Gure Gabonetako enborra. Gaur gauean sutara joango duk eta gau osoan erreko duk, etxea eta barruan dauden guztiak babesteko. Hire aitona-amonen aitona-amonen ohitura duk.”",
+      "Aitona enbor erraldoi eta korapilatsu batekin borrokan ari da, erdi elurpean. “Hau”, dio arnasestuka, “gure Gabon-subila dun. Gure Gabonetako enborra. Gaur gauean sutara joango dun eta gau osoan erreko dun, etxea eta barruan dauden guztiak babesteko. Hire aitona-amonen aitona-amonen ohitura dun.”"),
     choices: [
       { label: "Lagundu enborra etxera eramaten", next: "dayAitonaHelp" },
       { label: "Elur-bola bat bota", next: "dayAitonaSnowball" },
-      { label: "Bere lanean utzi eta basora joan", next: "introMeetMariDomingi" }
+      { label: "Bere lanean utzi eta basora joan", next: "forestMovement" }
     ]
   },
   dayAitonaSnowball: {
@@ -762,18 +766,25 @@ const story = {
     text: "Txapelaren erdi-erdian ematen dio. Une batez geldi geratzen da, elurra sudurretik behera tantaka... eta orduan barre algaraka hasten da eta beste bat botatzen dizu, askoz gogorrago. Gero bere enborrera itzultzen da, puzka.",
     choices: [
       { label: "Lagundu enborra etxera eramaten", next: "dayAitonaHelp" },
-      { label: "Basora joan", next: "introMeetMariDomingi" }
+      { label: "Basora joan", next: "forestMovement" }
     ]
   },
   dayAitonaHelp: {
     image: "aitonaLog",
-    text: "Elkarrekin, bultza eta tira, irristatu eta berriro bultza, enbor handia atearen ondoan seguru egon arte. “Ha! Idia bezain indartsua”, dio aitonak. “Orain, zoaz jolastera, baina ez sartu gehiegi zuhaitzen artean. Laster ilunduko du.”",
+    text: s => hika(s,
+      "Elkarrekin, bultza eta tira, irristatu eta berriro bultza, enbor handia atearen ondoan seguru egon arte. “Ha! Idia bezain indartsua haiz”, dio aitonak. “Orain, hoa jolastera, baina ez sartu gehiegi zuhaitzen artean. Laster ilunduko dik.”",
+      "Elkarrekin, bultza eta tira, irristatu eta berriro bultza, enbor handia atearen ondoan seguru egon arte. “Ha! Idia bezain indartsua haiz”, dio aitonak. “Orain, hoa jolastera, baina ez sartu gehiegi zuhaitzen artean. Laster ilunduko din.”"),
     effect: { kind: "log", lore: "subila" },
-    choices: [{ label: "Basora joan", next: "introMeetMariDomingi" }]
+    choices: [{ label: "Basora joan", next: "forestMovement" }]
+  },
+  forestMovement: {
+    image: "forest",
+    text: "Basoan adar bila zabiltzala, soinu bat sumatzen duzu. Basurdea ote? Aitonak beti zioen basurdeak iluntzean jeisten direla artoa jatera, ez goizez... edo azeria? baino... buruko txuria, animali batek... ",
+    choices: [{ label: "Jarraitu", next: "introMeetMariDomingi" }]
   },
   introMeetMariDomingi: {
     image: "maridomingi",
-    text: "Basoan adar bila zabiltzala, soinu bat sumatzen duzu. Basurdea ote? Aitonak beti zioen basurdeak iluntzean jeisten direla artoa jatera... edo azeria? baserriko ahuntzak? baino... txapela, animali batek... \u201cHor zaude! zu! etorri hona!\u201d dio arnasestuka \u201c laguntza behar dugu... ekaitza... sua... ez dut denbora dena azaltzeko, nola duzu izena?\u201d",
+    text: "\u201cHor zaude! zu! etorri hona!\u201d dio arnasestuka zuregana gerturatu den emakumeak. \u201c laguntza behar dugu... ekaitza... sua... ez dut denbora dena azaltzeko, nola duzu izena?\u201d",
     type: "nameInput",
     next: "introSendOff"
   },
@@ -1623,7 +1634,7 @@ const story = {
   mariFailHika: {
     image: "caveDark",
     noBack: true, clearHistory: true,
-    text: s => `Mariren begiek tximista egiten dute. “Zu? Arrotz bat al naiz ni, nire atarian bertan horrela hitz egiteko?”\n\nHaize-bolada batek orroka egiten du kobazulotik eta lurrera botatzen zaitu. Altxatzen zarenean, kobazuloa ilun eta hutsik dago, eta goian, su-bola bat ari da zeruan zehar ziztuan ${peak(s).name} aldera.\n\nOrain badakizu: Mariri “hi” erabiliz hitz egin behar zaio, familiari bezala.`,
+    text: s => `Mariren begiek tximista egiten dute. “Zu? Arrotz bat al naiz ni, nire atarian bertan horrela hitz egiteko?”\n\nHaize-bolada batek orroka egiten du kobazulotik eta lurrera botatzen zaitu. Altxatzen zarenean, kobazuloa ilun eta hutsik dago, eta goian, su-bola bat ari da zeruan zehar ziztuan ${peak(s).name} aldera.\n\nOrain badakizu: Mariri “hi” erabiliz hitz egin behar zaio, lagun bati bezala.`,
     choices: [{ label: "Soilgunera jaitsi", next: "map" }]
   },
   mariFailSit: {
@@ -1990,6 +2001,7 @@ function applyEffect(effect) {
   if (e.useItem) delete s.items[e.useItem];
   if (e.flag) s.flags[e.flag] = true;
   if (e.found) s.found[e.found] = true;
+  if (e.register) { s.register = e.register; store.set(SETTINGS_KEY, { register: e.register }); }
   if (e.lore && !s.lore.includes(e.lore)) s.lore.push(e.lore);
   if (e.kind) s.kind[e.kind] = true;
   if (e.resolve) s.quests[e.resolve] = "resolved";
@@ -2036,7 +2048,7 @@ function renderNode(node) {
   renderCard(node, true);
 }
 
-const isTwoStep = node => !node.type && visibleChoices(node).length >= 2;
+const isTwoStep = node => !node.type && !node.oneStep && visibleChoices(node).length >= 2;
 
 // The question on the choice step: a slide's own `ask` (or its `prompt`), otherwise
 // "Zer erantzungo duzu?" when every option is something said, else "Zer egingo duzu?".
@@ -2158,7 +2170,8 @@ function renderChoices(choices, area, node) {
   choices.forEach(choice => {
     const btn = document.createElement("button");
     const done = choice.done && choice.done(state);
-    btn.className = "choice-btn" + (done ? " visited" : "");
+    const chosen = choice.chosen && choice.chosen(state);
+    btn.className = "choice-btn" + (done ? " visited" : "") + (chosen ? " chosen" : "");
     btn.textContent = interpolate(val(choice.label));
     if (done) {
       const sub = document.createElement("span");
@@ -2195,7 +2208,7 @@ function playLids(frames, ms) {
 const pause = ms => new Promise(r => setTimeout(r, ms));
 async function withEyelids(run) {
   const el = document.getElementById("eyelids");
-  el.querySelectorAll(".lid").forEach(l => l.getAnimations().forEach(a => a.cancel()));
+  [el, ...el.querySelectorAll(".lid")].forEach(n => n.getAnimations().forEach(a => a.cancel()));   // start fresh
   el.hidden = false;
   el.classList.add("active");
   try { await run(); } catch (e) { /* never leave the player stuck behind closed eyes */ }
@@ -2203,15 +2216,17 @@ async function withEyelids(run) {
 }
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// The car: heavy eyelids, fighting it, drooping again, gone. Wakes slowly at the farm.
+// The car: heavy eyelids, fighting it, drooping again, gone. The child wakes already
+// outside at the farm, so it ends with a plain fade-in rather than eyes opening.
 function sleepInCar(next, effect) {
   if (reducedMotion()) { goTo(next, effect); return; }
   withEyelids(async () => {
     await playLids([[0, 0], [0.25, 0.45], [0.38, 0.25], [0.62, 0.7], [0.72, 0.55], [1, 1]], 4200);
     await pause(400);
-    goTo(next, effect);                 // the farm appears behind closed eyes
-    await pause(1600);
-    await playLids([[0, 1], [0.3, 0.55], [0.42, 0.8], [0.75, 0.3], [0.85, 0.42], [1, 0]], 3400);
+    goTo(next, effect);                 // the farm appears behind the dark
+    await pause(1400);
+    const el = document.getElementById("eyelids");
+    await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1600, easing: "ease-out", fill: "forwards" }).finished.catch(() => {});
   });
 }
 
@@ -2253,25 +2268,7 @@ function renderMenu() {
     choicesEl.appendChild(btn);
   });
 
-  const audioBtn = document.createElement("button");
-  audioBtn.className = "choice-btn" + (state.audioEnabled ? "" : " audio-attn");
-  audioBtn.textContent = state.audioEnabled ? "🔇 Audioa itzali" : "🔈 Audioa piztu";
-  audioBtn.onclick = () => { toggleAudio(); };
-  choicesEl.appendChild(audioBtn);
-
-  // How Mari speaks to the child: hika for a boy (toka) or for a girl (noka).
-  const noka = state.register === "noka";
-  const regBtn = document.createElement("button");
-  regBtn.className = "choice-btn register-toggle";
-  regBtn.setAttribute("role", "switch");
-  regBtn.setAttribute("aria-checked", String(noka));
-  regBtn.setAttribute("aria-label", "Erregistroa: " + (noka ? "neska (noka)" : "mutila (toka)"));
-  regBtn.innerHTML = `<span class="reg-label">Erregistroa</span>
-    <span class="reg-opts"><span class="reg-opt${noka ? "" : " on"}">Mutila (toka)</span>
-    <span class="reg-track" aria-hidden="true"><span class="reg-knob"></span></span>
-    <span class="reg-opt${noka ? " on" : ""}">Neska (noka)</span></span>`;
-  regBtn.onclick = toggleRegister;
-  choicesEl.appendChild(regBtn);
+  // Audio is on the 🔈 icon in the top bar; the hika register is chosen after "Hasi".
 
   const music = document.getElementById("menuMusic");
   if (state.audioEnabled) music.play().catch(() => {});
@@ -2343,7 +2340,7 @@ function startGame() {
   state = newState(state);
   history = [];
   inGame = true;
-  goTo("introWinter");
+  goTo("registerChoice");
 }
 
 function continueGame() {
@@ -2354,17 +2351,12 @@ function continueGame() {
   let id = d.currentId;
   if (!story[id]) id = d.state.flags && d.state.flags.reachedMap ? "map" : null;
   if (!id) { store.del(SAVE_KEY); startGame(); return; }
-  state = Object.assign(newState(), d.state, { audioEnabled: state.audioEnabled, register: state.register });
+  // A saved game keeps the register it was started with.
+  state = Object.assign(newState(), d.state, { audioEnabled: state.audioEnabled, register: d.state.register || state.register });
   history = (d.history || []).filter(h => h && story[h.id]);
   inGame = true;
   currentId = id;
   renderWithTransition();
-}
-
-function toggleRegister() {
-  state.register = state.register === "noka" ? "toka" : "noka";
-  store.set(SETTINGS_KEY, { register: state.register });
-  render();
 }
 
 function toggleAudio() {
