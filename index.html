@@ -642,7 +642,6 @@ const story = {
     choices: [{ label: "Ohera itzuli", next: "dayNextDay" }]
   },
   dayStormShutters: {
-    image: "stormWindow",
     effect: { flag: "stormShutters" },
     text: "Alferrik da. DANBA! Haizeak kontraleihoak zabal-zabalik irekitzen ditu, eta elurra zurrunbiloan sartzen da gelara. Ohetik salto egiten duzu ixteko... eta orduan ikusten duzu. Urrun, mendian goian, argi txiki eta bero bat dago distiraka ilunpetan.\n\nBegira zaudela, dir-dir egiten du... dir-dir... eta itzali egiten da.",
     choices: [{ label: "Leihoa itxi eta ohera itzuli", next: "dayNextDay" }]
@@ -1059,7 +1058,7 @@ const story = {
     effect: { found: "hut" },
     text: "Bidezidorra zuhaitzetatik irten eta goiko larre batera igotzen da. Harrizko etxola txiki bat, txabola bat, muinoaren kontra kokatuta dago, teilatutik kea dariola. Ondoan, harri lau erraldoiak elkarri eutsita daude, harrizko mahai bat bezala. Norbait “Txo! Txo!” oihuka ari da, eta ardi-joalak entzuten dira mendi-hegal osoan.",
     choices: [
-      { label: "Joan txabolara", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
+      { label: "Txabolara joan", next: s => s.kind.lambs ? "joanesRevisit" : "joanesMeet" },
       { label: "Harri erraldoiei begiratu", when: s => !s.lore.includes("jentilak"), next: "jentilStones" },
       { label: "Basoko bidera jaitsi", next: "basajaunStart" },
       TO_CLEARING
