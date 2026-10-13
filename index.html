@@ -991,7 +991,7 @@ const story = {
     choices: [TO_CLEARING]
   },
   basajaunStayed: {
-    image: "fireside",
+    image: "basajaunClose",
     text: "Basajaunak beste une batez aztertzen zaitu, eta orduan zerbait lasaitzen zaio aurpegian. “Gutxi geratzen dira”, dio. “Zatoz. Eseri nire sutondoan.”",
     narration: "Une luze batez, zuetako inor ez zen mugitu. Orduan, poliki, zerbait lasaitu zitzaion erraldoiari aurpegian, eutsitako arnasa azkenean askatzen denean bezala. “Gutxi geratzen dira”, esan zuen, orain isilago. “Zatoz. Eseri nire sutondoan.”",
     choices: NEXT("basajaunFire")
@@ -1108,19 +1108,19 @@ const story = {
     ]
   },
   lambStream: {
-    image: "lambs",
+    image: "lambStream",
     effect: { flag: "lambStream" },
     text: "Errekan, bildots bat harri baten gainean geratu da harrapatuta, izotzaren erdian, negar-zotinka. Izotza oin batekin probatzen duzu (eusten du) eta bildotsa eramaten duzu. Dirudiena baino astunagoa da, eta belarria miazkatzen dizu.",
     choices: [{ label: "Hurrengo joalari adi jarri", next: "lambsHub" }]
   },
   lambRocks: {
-    image: "lambs",
+    image: "lambRoot",
     effect: { flag: "lambRocks" },
     text: "Goian, harkaitzen artean, bildots baten joala sustrai batean trabatuta dago eta ezin da mugitu. Askatu egiten duzu, eta jauzika jaisten da muinoan behera, zuzen-zuzen txabolarantz, bidea betidanik ezagutuko balu bezala.",
     choices: [{ label: "Hurrengo joalari adi jarri", next: "lambsHub" }]
   },
   lambBramble: {
-    image: "lambs",
+    image: "lambBrambles",
     effect: { flag: "lambBramble" },
     text: s => "Sasitza iluna eta korapilatsua da. " +
       (s.items.torch ? "Zure linternak bi begi distiratsu harrapatzen ditu, behe-behean: bildots bat, haizetik ezkutatuta." : "Lau hankan sartzen zara, joalaren hotsari jarraituz, harrituta dagoen bildots batekin sudurrez sudur topo egin arte.") +
